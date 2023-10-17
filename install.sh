@@ -2,8 +2,8 @@
 
 for script in $(ls ./scripts)
 do
-    echo "running ./installs/$script"
-    ./installs/$script
+    echo "running ./scripts/$script"
+    ./scripts/$script
 done
 
 stowit() {
@@ -13,3 +13,5 @@ stowit() {
 }
 
 stowit "nvim"
+stowit "tmux"
+
