@@ -14,4 +14,4 @@ stowit() {
 
 stowit "nvim"
 stowit "tmux"
-
+stowit "bin"
