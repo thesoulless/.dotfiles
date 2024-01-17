@@ -20,6 +20,12 @@ antigen bundle zsh-users/zsh-autosuggestions
 # Tell Antigen that you're done.
 antigen apply
 
+eval "$(direnv hook zsh)"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
 source ~/.zsh_profile
 
 if [ -f ~/.zshrc.local ]; then
