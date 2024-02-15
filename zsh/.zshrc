@@ -1,26 +1,15 @@
-source ~/antigen.zsh
+source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
 
-# Load the oh-my-zsh's library.
-antigen use oh-my-zsh
-
-# Bundles from the default repo (robbyrussell's oh-my-zsh).
-antigen bundle git
-antigen bundle pip
-antigen bundle lein
-antigen bundle command-not-found
-
-# Syntax highlighting bundle.
-antigen bundle zsh-users/zsh-syntax-highlighting
+autoload -Uz compinit
+compinit
 
 # Load the theme.
-antigen theme robbyrussell
+export ZSH_THEME="robbyrussell"
 
-antigen bundle zsh-users/zsh-autosuggestions
-
-# Tell Antigen that you're done.
-antigen apply
+antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
 
 eval "$(direnv hook zsh)"
+
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
@@ -35,3 +24,25 @@ else
 fi
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/hamed/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/hamed/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/hamed/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/hamed/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/hamed/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/hamed/Downloads/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/hamed/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/hamed/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
