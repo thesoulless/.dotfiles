@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-str=""
-for arg in "${@}"; do str+="$arg.*"; done
-str=${str%??}
+read -p "Enter Query: " str
+
+str="${str// /.*}"
 
 fif() {
   if [ ! "$#" -gt 0 ]; then echo "Need a string to search for!"; return 1; fi

@@ -22,3 +22,5 @@ brew install jq
 brew install terraform
 brew install antidote
 brew install glow
+brew install pspg
+brew install xo/xo/usql

@@ -11,6 +11,7 @@ VIM="nvim"
 export GIT_EDITOR=$VIM
 
 bindkey -s '^f' 'tmux-sessionizer\n'
+bindkey -s '^s' 'so\n'
 
 addToPath() {
     path+=($1)
