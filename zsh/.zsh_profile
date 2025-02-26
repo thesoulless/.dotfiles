@@ -1,6 +1,6 @@
 alias vim="nvim"
 alias vi="nvim"
-alias G="git"
+alias g="git"
 alias gw="g worktree"
 alias gwa="gw add"
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"

@@ -51,3 +51,11 @@ db() {
     export USQL_PAGER='pspg';
     usql $@;
 }
+
+if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
+  export TERM=xterm-256color
+fi
+
+# bun completions
+[ -s "/Users/hamed/.bun/_bun" ] && source "/Users/hamed/.bun/_bun"
+# zprof
