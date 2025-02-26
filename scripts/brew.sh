@@ -14,6 +14,8 @@ brew install pyenv
 brew install pyenv-virtualenv
 brew install ripgrep
 brew install tokei
+brew install git
+brew install coreutils fd
 
 # To install useful key bindings and fuzzy completion:
 $(brew --prefix)/opt/fzf/install
