@@ -61,3 +61,4 @@ fi
 # zprof
 
 . "$HOME/.local/bin/env"
+. "/Users/hamed/.deno/env"
