@@ -59,3 +59,5 @@ fi
 # bun completions
 [ -s "/Users/hamed/.bun/_bun" ] && source "/Users/hamed/.bun/_bun"
 # zprof
+
+. "$HOME/.local/bin/env"
