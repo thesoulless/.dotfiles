@@ -12,6 +12,7 @@ stowit() {
     stow $1
 }
 
+stowit "nushell"
 stowit "nvim"
 stowit "tmux"
 stowit "bin"

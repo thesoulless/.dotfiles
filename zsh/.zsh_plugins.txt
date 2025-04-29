@@ -1,3 +1,5 @@
+jeffreytse/zsh-vi-mode
+
 # .zsh_plugins.txt
 rupa/z
 zsh-users/zsh-completions
