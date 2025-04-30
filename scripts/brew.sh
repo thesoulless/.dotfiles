@@ -28,3 +28,4 @@ brew install glow
 brew install pspg
 brew install xo/xo/usql
 brew install dprint
+brew install watchman
