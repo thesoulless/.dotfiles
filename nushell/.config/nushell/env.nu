@@ -31,7 +31,7 @@ alias tf = terraform
 #########################################################################
 # Env vars
 #########################################################################
-$env.VIMRUNTIME = '/opt/homebrew/Cellar/neovim/0.10.4_1/share/nvim/runtime'
+$env.VIMRUNTIME = '/opt/homebrew/Cellar/neovim/0.11.1/share/nvim/runtime'
 $env.VIM = "nvim"
 $env.GIT_EDITOR = $env.VIM
 
