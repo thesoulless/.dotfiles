@@ -216,18 +216,72 @@ return {
                         on_attach = on_attach,
                     }
                 end,
-                ["biome"] = function()
-                    local lspconfig = require("lspconfig")
-                    lspconfig.biome.setup {
-                        single_file_support = true,
-                    }
-                end,
                 ruff = function()
                     local lspconfig = require("lspconfig")
                     lspconfig.ruff.setup {}
                 end
             }
         })
+
+        local lspconfig = require("lspconfig")
+        lspconfig.dprint.setup {
+            single_file_support = true,
+        }
+
+        lspconfig.biome.setup {
+            single_file_support = true,
+            -- on_attach = function(client, bufnr)
+            --  client.server_capabilities.documentFormatProvider = true
+            --  vim.api.nvim_create_autocmd("BufWritePre", {
+            --  buffer = bufnr,
+            --  callback = function()
+            --  vim.lsp.buf.format({ async = false })
+            --  end,
+            --  })
+            -- end,
+        }
+
+        lspconfig.gopls.setup {
+            capabilities = capabilities,
+            settings = {
+                gopls = {
+                    codelenses = {
+                        gc_details = false,
+                        generate = true,
+                        regenerate_cgo = true,
+                        run_govulncheck = true,
+                        test = true,
+                        tidy = true,
+                        upgrade_dependency = true, -- do I really want this?
+                        vendor = true,
+                    },
+                    hints = {
+                        assignVariableTypes = true,
+                        compositeLiteralFields = true,
+                        compositeLiteralTypes = true,
+                        constantValues = true,
+                        functionTypeParameters = true,
+                        parameterNames = true,
+                        rangeVariableTypes = true,
+                    },
+                    analyses = {
+                        nilness = true,
+                        unusedparams = true,
+                        shadow = true,
+                        unusedwrite = true,
+                        useany = true,
+                        modernize = true,
+                    },
+                    gofumpt = true,
+                    staticcheck = true,
+                    usePlaceholders = true,
+                    completeUnimported = true,
+                    directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules", "-_data", "-.direnv", "-.devenv" },
+                    semanticTokens = true,
+                },
+            },
+            on_attach = on_attach,
+        }
 
         require('lspconfig').nixd.setup {}
 
