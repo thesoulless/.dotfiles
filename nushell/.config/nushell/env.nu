@@ -40,7 +40,8 @@ $env.BUN_INSTALL = ($env.HOME ++ "/.bun")
 $env.GOROOT = "/usr/local/go"
 
 $env.DENO_INSTALL = ("/Users/" ++ $env.USER ++ "/.deno")
-source ~/.env.nu.local
+source ~/.env.local.nu
+source ./nix-profile.nu
 
 #########################################################################
 # PATH
