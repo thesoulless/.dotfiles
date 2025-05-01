@@ -29,3 +29,5 @@ brew install pspg
 brew install xo/xo/usql
 brew install dprint
 brew install watchman
+brew install atuin
+brew install zoxide

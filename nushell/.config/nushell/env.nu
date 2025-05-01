@@ -71,3 +71,7 @@ $env.PATH = ($env.PATH | append ((go env GOPATH | str trim) ++ "/bin"))
 # if ("/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" | path exists) {
 #    source "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
 #}
+
+#########################################################################
+# Plugins
+########################################################################

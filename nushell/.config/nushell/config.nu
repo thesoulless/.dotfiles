@@ -27,6 +27,18 @@ $env.config.cursor_shape.vi_normal = "inherit"
 $env.config.cursor_shape.vi_insert = "inherit"
 
 $env.config.hooks.env_change.PWD = [(source nu-hooks/direnv/config.nu)]
+$env.config.hooks.pre_prompt = (
+    $env.config.hooks.pre_prompt | append (source nu-hooks/direnv/config.nu)
+)
+
+$env.config = $env.config | upsert hooks {
+    pre_prompt: ($env.config.hooks.pre_prompt | default [] | append {||
+        job spawn { atuin history start ... }
+    })
+    pre_execution: ($env.config.hooks.pre_execution | default [] | append {||
+        job spawn { atuin history end ... }
+    })
+}
 
 ####################################################
 # Key Bindings
@@ -54,4 +66,18 @@ $env.config.keybindings ++= [
 			{send: Enter}
 		]
 	}
+    # {
+    #     name: atuin
+    #     modifier: control
+    #     keycode: char_r
+    #     mode: [emacs, vi_normal, vi_insert]
+    #     event: { send: executehostcommand cmd: (_atuin_search_cmd) }
+    # }
 ]
+
+
+####################################################
+# Plugins
+####################################################
+source ~/.local/share/atuin/init.nu
+source ~/.zoxide.nu
