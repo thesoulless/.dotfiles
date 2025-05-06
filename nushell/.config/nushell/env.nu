@@ -31,14 +31,16 @@ alias tf = terraform
 #########################################################################
 # Env vars
 #########################################################################
-$env.VIMRUNTIME = '/opt/homebrew/Cellar/neovim/0.11.1/share/nvim/runtime'
-$env.VIM = "nvim"
+let env_vars = {
+    XDG_CONFIG_HOME: ($env.HOME ++ "/.config")
+    VIMRUNTIME: '/opt/homebrew/Cellar/neovim/0.11.1/share/nvim/runtime'
+    VIM: 'nvim'
+    GOROOT: '/usr/local/go'
+}
+load-env $env_vars
+
 $env.GIT_EDITOR = $env.VIM
-
 $env.BUN_INSTALL = ($env.HOME ++ "/.bun")
-
-$env.GOROOT = "/usr/local/go"
-
 $env.DENO_INSTALL = ("/Users/" ++ $env.USER ++ "/.deno")
 source ~/.env.local.nu
 source ./nix-profile.nu

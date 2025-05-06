@@ -8,6 +8,8 @@ export ZSH_THEME="robbyrussell"
 
 antidote load ${ZDOTDIR:-$HOME}/.zsh_plugins.txt
 
+export XDG_CONFIG_HOME="$HOME/.config"
+
 eval "$(direnv hook zsh)"
 
 
