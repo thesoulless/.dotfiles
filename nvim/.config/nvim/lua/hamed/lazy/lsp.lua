@@ -119,7 +119,6 @@ return {
                 "templ",
                 -- "delve"
                 -- "eslint",
-                -- "pyright",
                 -- "golangci_lint_ls",
             },
             handlers = {
@@ -165,65 +164,21 @@ return {
                             }
                         }
                     }
-                end,
-                ["dprint"] = function()
-                    local lspconfig = require("lspconfig")
-                    lspconfig.dprint.setup {
-                        capabilities = capabilities,
-                    }
-                end,
-                ["gopls"] = function()
-                    local lspconfig = require("lspconfig")
-                    lspconfig.gopls.setup {
-                        capabilities = capabilities,
-                        settings = {
-                            gopls = {
-                                codelenses = {
-                                    gc_details = false,
-                                    generate = true,
-                                    regenerate_cgo = true,
-                                    run_govulncheck = true,
-                                    test = true,
-                                    tidy = true,
-                                    upgrade_dependency = true, -- do I really want this?
-                                    vendor = true,
-                                },
-                                hints = {
-                                    assignVariableTypes = true,
-                                    compositeLiteralFields = true,
-                                    compositeLiteralTypes = true,
-                                    constantValues = true,
-                                    functionTypeParameters = true,
-                                    parameterNames = true,
-                                    rangeVariableTypes = true,
-                                },
-                                analyses = {
-                                    nilness = true,
-                                    unusedparams = true,
-                                    shadow = true,
-                                    unusedwrite = true,
-                                    useany = true,
-                                    modernize = true,
-                                },
-                                gofumpt = true,
-                                staticcheck = true,
-                                usePlaceholders = true,
-                                completeUnimported = true,
-                                directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules", "-_data", "-.direnv", "-.devenv" },
-                                semanticTokens = true,
-                            },
-                        },
-                        on_attach = on_attach,
-                    }
-                end,
-                ruff = function()
-                    local lspconfig = require("lspconfig")
-                    lspconfig.ruff.setup {}
                 end
             }
         })
 
         local lspconfig = require("lspconfig")
+
+        local ruff_on_attach = function(client, bufnr)
+            if client.name == 'ruff_lsp' then
+                client.server_capabilities.hoverProvider = true
+            end
+        end
+        lspconfig.ruff.setup {
+            on_attach = ruff_on_attach,
+        }
+
         lspconfig.dprint.setup {
             single_file_support = true,
         }
