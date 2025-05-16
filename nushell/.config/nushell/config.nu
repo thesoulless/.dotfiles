@@ -19,6 +19,13 @@
 # use std/util "path add"
 
 ####################################################
+# Plugins
+####################################################
+source ~/.local/share/atuin/init.nu
+source ~/.zoxide.nu
+
+
+####################################################
 # Nu Config
 ####################################################
 $env.config.buffer_editor = "nvim"
@@ -74,10 +81,3 @@ $env.config.keybindings ++= [
     #     event: { send: executehostcommand cmd: (_atuin_search_cmd) }
     # }
 ]
-
-
-####################################################
-# Plugins
-####################################################
-source ~/.local/share/atuin/init.nu
-source ~/.zoxide.nu
