@@ -63,6 +63,8 @@ $env.path ++= [
 	/opt/homebrew/sbin
 	/opt/homebrew/opt/curl/bin
 	($env.HOME ++ "/.deno/bin")
+    /nix/var/nix/profiles/default/bin
+    ~/.local/bin
 ]
 
 $env.PATH = ($env.PATH | append ((go env GOPATH | str trim) ++ "/bin"))
