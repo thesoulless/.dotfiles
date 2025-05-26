@@ -175,28 +175,14 @@ return {
                 client.server_capabilities.hoverProvider = true
             end
         end
-        lspconfig.ruff.setup {
-            on_attach = ruff_on_attach,
-        }
+        vim.lsp.enable('ruff', {})
+        vim.lsp.enable('dprint', {})
 
-        lspconfig.dprint.setup {
-            single_file_support = true,
-        }
+        vim.lsp.enable('biome', {
+            workspace_required = false,
+        })
 
-        lspconfig.biome.setup {
-            single_file_support = true,
-            -- on_attach = function(client, bufnr)
-            --  client.server_capabilities.documentFormatProvider = true
-            --  vim.api.nvim_create_autocmd("BufWritePre", {
-            --  buffer = bufnr,
-            --  callback = function()
-            --  vim.lsp.buf.format({ async = false })
-            --  end,
-            --  })
-            -- end,
-        }
-
-        lspconfig.gopls.setup {
+        vim.lsp.enable('gopls', {
             capabilities = capabilities,
             settings = {
                 gopls = {
@@ -236,9 +222,9 @@ return {
                 },
             },
             on_attach = on_attach,
-        }
+        })
 
-        require('lspconfig').nixd.setup {}
+        vim.lsp.enable('nixd')
 
         local cmp_select = { behavior = cmp.SelectBehavior.Select }
 
