@@ -31,9 +31,10 @@ alias tf = terraform
 #########################################################################
 # Env vars
 #########################################################################
+let nvim_prefix = (which nvim | get 0.path | path expand | path dirname | path dirname)
 let env_vars = {
     XDG_CONFIG_HOME: ($env.HOME ++ "/.config")
-    VIMRUNTIME: '/opt/homebrew/Cellar/neovim/0.11.1/share/nvim/runtime'
+    VIMRUNTIME: ($nvim_prefix ++ "/share/nvim/runtime")
     VIM: 'nvim'
     GOROOT: '/usr/local/go'
 }

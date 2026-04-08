@@ -12,7 +12,6 @@ return {
         "L3MON4D3/LuaSnip",
         "saadparwaiz1/cmp_luasnip",
         "j-hui/fidget.nvim",
-        "ray-x/lsp_signature.nvim",
     },
 
     config = function()
@@ -45,7 +44,7 @@ return {
             local has_copilot_lua, copilot_lua_suggestion = pcall(require, 'copilot.suggestion')
 
             local buf = vim.api.nvim_get_current_buf()
-            local buftype = vim.api.nvim_buf_get_option(buf, 'buftype')
+            local buftype = vim.bo[buf].buftype
             if buftype == '' then
                 if copilot_keys ~= '' then
                     vim.api.nvim_feedkeys(copilot_keys, 'i', true)
@@ -93,21 +92,6 @@ return {
             {},
             vim.lsp.protocol.make_client_capabilities(),
             cmp_lsp.default_capabilities())
-
-        local signature_setup = {
-            bind = true,
-            hint_enable = true,
-            hint_prefix = "🐼 ",
-            handler_opts = {
-                border = "rounded"
-            },
-            floating_window = true,
-            max_width = 80,
-        }
-
-        local function on_attach(_, bufnr)
-            require("lsp_signature").on_attach(signature_setup, bufnr)
-        end
 
         require("fidget").setup({})
         require("mason").setup()
@@ -170,11 +154,6 @@ return {
 
         local lspconfig = require("lspconfig")
 
-        local ruff_on_attach = function(client, bufnr)
-            if client.name == 'ruff_lsp' then
-                client.server_capabilities.hoverProvider = true
-            end
-        end
         vim.lsp.enable('ruff', {})
         vim.lsp.enable('dprint', {})
 
@@ -221,7 +200,6 @@ return {
                     semanticTokens = true,
                 },
             },
-            on_attach = on_attach,
         })
 
         vim.lsp.enable('nixd')
@@ -272,7 +250,8 @@ return {
         })
 
         vim.diagnostic.config({
-            virtual_test = true,
+            virtual_text = true,
+            virtual_lines = { current_line = true },
             float = {
                 focusable = false,
                 style = "minimal",

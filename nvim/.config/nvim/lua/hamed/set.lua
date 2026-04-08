@@ -34,3 +34,5 @@ vim.opt.autoread = true
 vim.g.editorconfig = true
 
 vim.opt.laststatus = 3
+
+vim.opt.shell = "/bin/zsh"
