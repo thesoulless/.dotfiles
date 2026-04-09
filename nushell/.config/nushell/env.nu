@@ -44,28 +44,28 @@ $env.GIT_EDITOR = $env.VIM
 $env.BUN_INSTALL = ($env.HOME ++ "/.bun")
 $env.DENO_INSTALL = ("/Users/" ++ $env.USER ++ "/.deno")
 source ~/.env.local.nu
-source ./nix-profile.nu
 
 #########################################################################
 # PATH
 #########################################################################
 $env.path ++= [($env.HOME ++ "/.local/scripts")]
 $env.path ++= [($env.BUN_INSTALL ++ "/bin")]
+$env.path ++= [("/nix/var/nix/profiles/default/bin")]
 $env.path ++= [
-	($env.HOME ++ "/bin")
-	/usr/local/bin
-	/usr/bin
-	/bin
-	/usr/sbin
-	/sbin
-	/usr/local/sbin
-	($env.GOROOT ++ "/bin")
-	/opt/homebrew/bin
-	/opt/homebrew/sbin
-	/opt/homebrew/opt/curl/bin
-	($env.HOME ++ "/.deno/bin")
-    /nix/var/nix/profiles/default/bin
-    ~/.local/bin
+    ($env.HOME ++ "/bin")
+    /usr/local/bin
+    /usr/bin
+    /bin
+    /usr/sbin
+    /sbin
+    /usr/local/sbin
+    ($env.GOROOT ++ "/bin")
+    /opt/homebrew/bin
+    /opt/homebrew/sbin
+    /opt/homebrew/opt/curl/bin
+    ($env.HOME ++ "/.deno/bin")
+    ($env.HOME ++ "/.local/bin")
+    ($env.HOME ++ "/.cargo/bin")
 ]
 
 $env.PATH = ($env.PATH | append ((go env GOPATH | str trim) ++ "/bin"))

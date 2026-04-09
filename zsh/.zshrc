@@ -1,3 +1,8 @@
+# Nix
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+
 source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
 
 autoload -Uz compinit
@@ -64,3 +69,5 @@ fi
 
 . "$HOME/.local/bin/env"
 . "/Users/hamed/.deno/env"
+
+. "$HOME/.cargo/env"

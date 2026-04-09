@@ -75,10 +75,13 @@ return {
                 lua = { "stylua" },
                 go = { "gofumpt" },
                 rust = { "rustfmt" },
-                javascript = { "biome" },
-                typescript = { "biome" },
-                json = { "biome" },
-                python = { "ruff_format", "black" },
+                -- javascript = { "biome" },
+                -- typescript = { "biome" },
+                -- json = { "biome" },
+                javascript = { "eslint" },
+                typescript = { "eslint" },
+                json = { "eslint" },
+                python = { "ruff_format" },
                 ["_"] = { "trim_whitespace" }
             },
             format_on_save = {
@@ -101,8 +104,8 @@ return {
                 "rust_analyzer",
                 -- "gopls",
                 "templ",
+                -- "pyright", -- Install per project instead
                 -- "delve"
-                -- "eslint",
                 -- "golangci_lint_ls",
             },
             handlers = {
@@ -157,9 +160,9 @@ return {
         vim.lsp.enable('ruff', {})
         vim.lsp.enable('dprint', {})
 
-        vim.lsp.enable('biome', {
-            workspace_required = false,
-        })
+        -- vim.lsp.enable('biome', {
+        --     workspace_required = false,
+        -- })
 
         vim.lsp.enable('gopls', {
             capabilities = capabilities,
@@ -203,6 +206,8 @@ return {
         })
 
         vim.lsp.enable('nixd')
+
+        vim.lsp.enable('eslint')
 
         local cmp_select = { behavior = cmp.SelectBehavior.Select }
 

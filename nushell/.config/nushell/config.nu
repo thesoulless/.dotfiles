@@ -24,7 +24,6 @@
 source ~/.local/share/atuin/init.nu
 source ~/.zoxide.nu
 
-
 ####################################################
 # Nu Config
 ####################################################
@@ -33,10 +32,19 @@ $env.config.edit_mode = "vi"
 $env.config.cursor_shape.vi_normal = "inherit"
 $env.config.cursor_shape.vi_insert = "inherit"
 
-$env.config.hooks.env_change.PWD = [(source nu-hooks/direnv/config.nu)]
+$env.config.hooks.env_change.PWD = [
+    # (source nix-profile.nu)
+    (source nu-hooks/direnv/config.nu)
+]
+
 $env.config.hooks.pre_prompt = (
-    $env.config.hooks.pre_prompt | append (source nu-hooks/direnv/config.nu)
+    $env.config.hooks.pre_prompt | default [] | append (source nix-profile.nu)
 )
+
+$env.config.hooks.pre_prompt = (
+    $env.config.hooks.pre_prompt | default [] | append (source nu-hooks/direnv/config.nu)
+)
+
 
 $env.config = $env.config | upsert hooks {
     pre_prompt: ($env.config.hooks.pre_prompt | default [] | append {||
