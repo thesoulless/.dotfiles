@@ -31,7 +31,6 @@ $env.config.buffer_editor = "nvim"
 $env.config.edit_mode = "vi"
 $env.config.cursor_shape.vi_normal = "inherit"
 $env.config.cursor_shape.vi_insert = "inherit"
-
 $env.config.hooks.env_change.PWD = [
     # (source nix-profile.nu)
     (source nu-hooks/direnv/config.nu)
@@ -45,20 +44,23 @@ $env.config.hooks.pre_prompt = (
     $env.config.hooks.pre_prompt | default [] | append (source nu-hooks/direnv/config.nu)
 )
 
-
-$env.config = $env.config | upsert hooks {
-    pre_prompt: ($env.config.hooks.pre_prompt | default [] | append {||
-        job spawn { atuin history start ... }
-    })
-    pre_execution: ($env.config.hooks.pre_execution | default [] | append {||
-        job spawn { atuin history end ... }
-    })
-}
-
 ####################################################
 # Key Bindings
 ####################################################
 $env.config.keybindings ++= [
+	{
+		name: hint_or_complete
+		modifier: none
+		keycode: tab
+		mode: [emacs, vi_insert]
+		event: {
+			until: [
+				{ send: HistoryHintComplete }
+				{ send: Menu name: completion_menu }
+				{ send: MenuNext }
+			]
+		}
+	}
 	{
 		name: tmux_sessionizer
 		modifier: control

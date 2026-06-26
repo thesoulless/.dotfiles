@@ -10,7 +10,7 @@ return {
             ensure_installed = {
                 "vimdoc", "javascript", "typescript", "c", "lua", "rust",
                 "jsdoc", "bash", "query", "go", "gomod", "gowork", "gosum",
-                "nu", "markdown", "yaml",
+                "nu", "markdown", "markdown_inline", "yaml",
             },
 
             -- Install parsers synchronously (only applied to `ensure_installed`)
@@ -63,5 +63,33 @@ return {
         }
 
         vim.treesitter.language.register("templ", "templ")
+
+        -- nvim-treesitter master's custom directives don't handle Neovim 0.11+'s
+        -- new `match` API (capture values became TSNode[] instead of TSNode), which
+        -- breaks markdown injections with a nil :range() call. Re-register the ones
+        -- we hit with a shim that unwraps the array.
+        local function unwrap(node)
+            if type(node) == "table" and not node.range then
+                return node[1]
+            end
+            return node
+        end
+
+        local parsers = require("nvim-treesitter.parsers")
+        vim.treesitter.query.add_directive("set-lang-from-info-string!", function(match, _, bufnr, pred, metadata)
+            local node = unwrap(match[pred[2]])
+            if not node then return end
+            local alias = vim.treesitter.get_node_text(node, bufnr):lower()
+            metadata["injection.language"] = parsers.ft_to_lang(alias) or alias
+        end, { force = true })
+
+        vim.treesitter.query.add_directive("downcase!", function(match, _, bufnr, pred, metadata)
+            local id = pred[2]
+            local node = unwrap(match[id])
+            if not node then return end
+            local text = vim.treesitter.get_node_text(node, bufnr, { metadata = metadata[id] }) or ""
+            metadata[id] = metadata[id] or {}
+            metadata[id].text = string.lower(text)
+        end, { force = true })
     end
 }

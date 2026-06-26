@@ -31,3 +31,4 @@ brew install dprint
 brew install watchman
 brew install atuin
 brew install zoxide
+brew install fnm
