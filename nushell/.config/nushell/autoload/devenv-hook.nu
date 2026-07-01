@@ -1,0 +1,88 @@
+# devenv hook for nushell
+#
+# LOCAL EDIT (not stock `devenv hook nu`): the two `^devenv shell` spawns below
+# are wrapped in `with-env { SHELL: $nu.current-exe }` so devenv launches nu as
+# the activation subshell instead of $SHELL (/bin/zsh). This is required for
+# auto-deactivation: only a nu activation subshell reloads this hook, sees
+# DEVENV_ROOT, and exits when you cd out of the project. Global $SHELL is left
+# untouched. Re-apply this if you regenerate the file via `devenv hook nu`.
+#
+# Usage: Add to your config.nu:
+#   source (devenv hook nu | save --force ~/.cache/devenv/hook.nu; "~/.cache/devenv/hook.nu")
+# Or: devenv hook nu | save --force ~/.cache/devenv/hook.nu
+#     source ~/.cache/devenv/hook.nu
+
+$env._DEVENV_HOOK_UNTRUSTED = ""
+
+$env.config = ($env.config | upsert hooks.env_change.PWD (
+    ($env.config | get -o hooks.env_change.PWD | default []) | append {||
+        # Inside devenv shell: exit when leaving the project directory
+        if ("DEVENV_ROOT" in $env) {
+            if not ($env.PWD == $env.DEVENV_ROOT or ($env.PWD | str starts-with ($env.DEVENV_ROOT + "/"))) {
+                # Save target directory so the parent shell can cd there after exit
+                $env.PWD | save --force ($env.DEVENV_ROOT + "/.devenv/exit-dir")
+                exit
+            }
+            return
+        }
+
+        let result = (^devenv hook-should-activate | complete)
+
+        if ($result.stderr | str trim) != "" {
+            print -e $result.stderr
+        }
+
+        if $result.exit_code == 0 {
+            let dir = ($result.stdout | str trim)
+            if $dir != "" {
+                do { cd $dir; with-env { SHELL: $nu.current-exe } { ^devenv shell } }
+                $env._DEVENV_HOOK_UNTRUSTED = ""
+                # If the devenv shell exited due to cd outside the project, follow the user there
+                let exit_dir_file = ($dir + "/.devenv/exit-dir")
+                if ($exit_dir_file | path exists) {
+                    let target_dir = (open $exit_dir_file | str trim)
+                    rm -f $exit_dir_file
+                    if ($target_dir | path exists) {
+                        cd $target_dir
+                    }
+                }
+            } else {
+                $env._DEVENV_HOOK_UNTRUSTED = ""
+            }
+        } else {
+            $env._DEVENV_HOOK_UNTRUSTED = $env.PWD
+        }
+    }
+))
+
+# Retry activation on each prompt for untrusted directories (after 'devenv allow')
+$env.config = ($env.config | upsert hooks.pre_prompt (
+    ($env.config | get -o hooks.pre_prompt | default []) | append {||
+        let untrusted = ($env | get -o _DEVENV_HOOK_UNTRUSTED | default "")
+        if $untrusted == "" {
+            return
+        }
+        if ("DEVENV_ROOT" in $env) {
+            return
+        }
+
+        let result = (^devenv hook-should-activate | complete)
+
+        if $result.exit_code == 0 {
+            let dir = ($result.stdout | str trim)
+            if $dir != "" {
+                do { cd $dir; with-env { SHELL: $nu.current-exe } { ^devenv shell } }
+                $env._DEVENV_HOOK_UNTRUSTED = ""
+                # If the devenv shell exited due to cd outside the project, follow the user there
+                let exit_dir_file = ($dir + "/.devenv/exit-dir")
+                if ($exit_dir_file | path exists) {
+                    let target_dir = (open $exit_dir_file | str trim)
+                    rm -f $exit_dir_file
+                    if ($target_dir | path exists) {
+                        cd $target_dir
+                    }
+                }
+            }
+        }
+    }
+))

@@ -1,34 +1,18 @@
-if [[ $(command -v brew) == "" ]]; then
+#!/usr/bin/env bash
+# Install Homebrew if missing, then sync all packages from the repo Brewfile.
+# The Brewfile (repo root) is the single source of truth — edit it, not this script.
+set -eu
+
+if ! command -v brew >/dev/null 2>&1; then
 	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-	(echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/hamed/.zprofile
+	echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >>"$HOME/.zprofile"
 fi
 eval "$(/opt/homebrew/bin/brew shellenv)"
-brew install tmux
-brew install lima
-brew install fzf
-brew install stow
-brew install neovim
-brew install node
-brew install direnv
-brew install pyenv
-brew install pyenv-virtualenv
-brew install ripgrep
-brew install tokei
-brew install git
-brew install coreutils fd
 
-# To install useful key bindings and fuzzy completion:
-$(brew --prefix)/opt/fzf/install
-brew install tlrc
+# Brewfile lives at the repo root, one level up from scripts/.
+BREWFILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/Brewfile"
+brew bundle install --file="$BREWFILE"
 
-brew install jq
-brew install terraform
-brew install antidote
-brew install glow
-brew install pspg
-brew install xo/xo/usql
-brew install dprint
-brew install watchman
-brew install atuin
-brew install zoxide
-brew install fnm
+# Install fzf key bindings & fuzzy completion without touching shell rc files
+# (we wire fzf ourselves in .zshrc / nushell config).
+"$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc || true

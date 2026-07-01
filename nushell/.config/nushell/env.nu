@@ -31,25 +31,30 @@ alias tf = terraform
 #########################################################################
 # PATH
 #########################################################################
-$env.path ++= [
-    /opt/homebrew/bin
-    /opt/homebrew/sbin
-    /opt/homebrew/opt/curl/bin
-    ($env.HOME ++ "/bin")
-    /usr/local/bin
-    /usr/bin
-    /bin
-    /usr/sbin
-    /sbin
-    /usr/local/sbin
-    ($env.HOME ++ "/.local/scripts")
-    ($env.HOME ++ "/.local/bin")
-    ($env.HOME ++ "/.cargo/bin")
-    ($env.HOME ++ "/.deno/bin")
-    ($env.HOME ++ "/.bun/bin")
-    /usr/local/go/bin
-    /nix/var/nix/profiles/default/bin
+# `path add` (std) prepends in priority order, expands `~`, and de-dupes.
+# Replaces the old `$env.path ++= [...]`, which *appended* — leaving Homebrew
+# at lower precedence than the inherited system paths.
+use std/util "path add"
+let priority_paths = [
+    "/opt/homebrew/bin"
+    "/opt/homebrew/sbin"
+    "/opt/homebrew/opt/curl/bin"
+    "~/bin"
+    "/usr/local/bin"
+    "/usr/bin"
+    "/bin"
+    "/usr/sbin"
+    "/sbin"
+    "/usr/local/sbin"
+    "~/.local/scripts"
+    "~/.local/bin"
+    "~/.cargo/bin"
+    "~/.deno/bin"
+    "~/.bun/bin"
+    "/usr/local/go/bin"
+    "/nix/var/nix/profiles/default/bin"
 ]
+path add ...$priority_paths
 
 $env.PATH = ($env.PATH | append ((go env GOPATH | str trim) ++ "/bin"))
 
