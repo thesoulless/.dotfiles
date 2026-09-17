@@ -2,12 +2,9 @@
 # CLI packages. Install/sync with `brew bundle install --file=Brewfile`;
 # `brew bundle cleanup` prunes anything not listed. Regenerate with
 # `brew bundle dump --force --file=Brewfile` (then re-curate).
-tap "elastic/tap"
-tap "jesseduffield/lazygit"
-tap "kardolus/chatgpt-cli"
-tap "railwaycat/emacsmacport"
-tap "temporalio/brew"
-tap "xo/xo"
+tap "hashicorp/tap", trusted: true
+tap "railwaycat/emacsmacport", trusted: true
+tap "xo/xo", trusted: true
 # Run your GitHub Actions locally
 brew "act"
 # Plugin manager for zsh, inspired by antigen and antibody
@@ -64,12 +61,16 @@ brew "libheif"
 brew "imagemagick"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
+# Kubernetes command-line interface (kubectl)
+brew "kubernetes-cli"
 # Simple terminal UI for git commands
 brew "lazygit"
 # Simple tool to make locally trusted development certificates
 brew "mkcert"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
+# Platform built on V8 to build network applications (global fallback; npm "corepack" below needs it)
+brew "node"
 # Modern shell for the GitHub era
 brew "nushell"
 # 7-Zip (high compression file archiver) implementation
@@ -82,14 +83,16 @@ brew "pspg"
 brew "ripgrep"
 # Organize software neatly under a single directory tree (e.g. /usr/local)
 brew "stow"
-# Tool to build, change, and version infrastructure
-brew "terraform"
+# Tool to build, change, and version infrastructure (removed from homebrew-core; HashiCorp tap)
+brew "hashicorp/tap/terraform"
 # Official tldr client written in Rust
 brew "tlrc"
 # Terminal multiplexer
 brew "tmux"
 # Program that allows you to count code, quickly
 brew "tokei"
+# tree-sitter CLI (nvim-treesitter main compiles parsers with it)
+brew "tree-sitter-cli"
 # Converts a ttyrec file into gif files
 brew "ttygif"
 # Watch files and take action when they change
@@ -108,7 +111,6 @@ go "github.com/kisielk/errcheck"
 go "github.com/davidrjenni/reftools/cmd/fillstruct"
 go "github.com/google/go-licenses"
 go "github.com/rogpeppe/godef"
-go "github.com/golangci/golangci-lint/cmd/golangci-lint"
 go "golang.org/x/tools/gopls"
 go "github.com/jstemmer/gotags"
 go "github.com/koron/iferr"

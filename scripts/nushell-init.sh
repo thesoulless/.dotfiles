@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
 # Generate the nushell integration files that config.nu sources. nushell cannot
 # run external commands during startup config evaluation, so these are produced
-# ahead of time here. Only creates missing files — delete a file and re-run to
-# refresh after a tool upgrade.
+# ahead of time here. Files are regenerated on every run, so re-run this after
+# upgrading atuin/zoxide (old snippets can use deprecated nushell syntax).
 # (carapace is wired inline in config.nu, so it needs no generated file.)
 set -eu
 
 gen() { # gen <target-file> <command...>
 	local target="$1"
 	shift
-	if [ ! -f "$target" ]; then
-		mkdir -p "$(dirname "$target")"
-		"$@" >"$target"
-		echo "generated $target"
-	fi
+	mkdir -p "$(dirname "$target")"
+	"$@" >"$target"
+	echo "generated $target"
 }
 
 if command -v atuin >/dev/null 2>&1; then
