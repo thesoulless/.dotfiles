@@ -22,7 +22,7 @@ autocmd('TextYankPost', {
     group = yank_group,
     pattern = '*',
     callback = function()
-        vim.highlight.on_yank({
+        vim.hl.on_yank({
             higroup = 'IncSearch',
             timeout = 40,
         })
@@ -41,27 +41,23 @@ autocmd({ "BufWritePre" }, {
     command = [[%s/\s\+$//e]],
 })
 
+-- Organize Go imports through gopls before conform formats the buffer (gofumpt via gopls).
 autocmd("BufWritePre", {
-  pattern = "*.go",
-  callback = function()
-    local params = vim.lsp.util.make_range_params()
-    params.context = {only = {"source.organizeImports"}}
-    -- buf_request_sync defaults to a 1000ms timeout. Depending on your
-    -- machine and codebase, you may want longer. Add an additional
-    -- argument after params if you find that you have to write the file
-    -- twice for changes to be saved.
-    -- E.g., vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 3000)
-    local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params)
-    for cid, res in pairs(result or {}) do
-      for _, r in pairs(res.result or {}) do
-        if r.edit then
-          local enc = (vim.lsp.get_client_by_id(cid) or {}).offset_encoding or "utf-16"
-          vim.lsp.util.apply_workspace_edit(r.edit, enc)
+    group = HamedGroup,
+    pattern = "*.go",
+    callback = function(ev)
+        for _, client in ipairs(vim.lsp.get_clients({ bufnr = ev.buf, name = "gopls" })) do
+            local params = vim.lsp.util.make_range_params(0, client.offset_encoding)
+            params.context = { only = { "source.organizeImports" } }
+            -- 1000ms timeout; bump it if imports only land on the second :w in big repos.
+            local result = client:request_sync("textDocument/codeAction", params, 1000, ev.buf)
+            for _, action in pairs(result and result.result or {}) do
+                if action.edit then
+                    vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+                end
+            end
         end
-      end
     end
-    vim.lsp.buf.format({async = false})
-  end
 })
 
 autocmd('BufEnter', {
@@ -84,8 +80,8 @@ autocmd('LspAttach', {
         vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
         vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
         vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)
-        vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts)
-        vim.keymap.set("n", "]d", function() vim.diagnostic.goto_prev() end, opts)
+        vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, opts)
+        vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, opts)
         vim.keymap.set("n", "<leader>vca", function() vim.lsp.buf.code_action() end, opts)
         vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts)
         vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
@@ -94,6 +90,15 @@ autocmd('LspAttach', {
         vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
         vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
         vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+
+        -- Inlay hints (gopls/rust-analyzer/zls are configured to provide them); <leader>th toggles.
+        local client = vim.lsp.get_client_by_id(e.data.client_id)
+        if client and client:supports_method("textDocument/inlayHint", e.buf) then
+            vim.lsp.inlay_hint.enable(true, { bufnr = e.buf })
+            vim.keymap.set("n", "<leader>th", function()
+                vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = e.buf }), { bufnr = e.buf })
+            end, { buffer = e.buf, desc = "Toggle inlay hints" })
+        end
     end
 })
 

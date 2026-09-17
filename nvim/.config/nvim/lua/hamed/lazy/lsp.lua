@@ -2,78 +2,27 @@ return {
     "neovim/nvim-lspconfig",
     dependencies = {
         "stevearc/conform.nvim",
-        "williamboman/mason.nvim",
-        "williamboman/mason-lspconfig.nvim",
-        "hrsh7th/cmp-nvim-lsp",
-        "hrsh7th/cmp-buffer",
-        "hrsh7th/cmp-path",
-        "hrsh7th/cmp-cmdline",
-        "hrsh7th/nvim-cmp",
-        "L3MON4D3/LuaSnip",
-        "saadparwaiz1/cmp_luasnip",
+        "mason-org/mason.nvim",
+        "mason-org/mason-lspconfig.nvim",
         "j-hui/fidget.nvim",
+        {
+            -- Completion. Replaces nvim-cmp + cmp-nvim-lsp/buffer/path/cmdline + cmp_luasnip.
+            "saghen/blink.cmp",
+            version = "1.*", -- release tags ship a prebuilt fuzzy matcher; `main` is v2 (breaking)
+            dependencies = { "L3MON4D3/LuaSnip", "rafamadriz/friendly-snippets" },
+        },
     },
 
     config = function()
-        local cmp = require("cmp")
-        local luasnip = require("luasnip")
-
-        local replace_termcodes = function(str)
-            return vim.api.nvim_replace_termcodes(str, true, true, true)
-        end
-
-        local function check_backspace()
-            local col = vim.fn.col('.') - 1
-            return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s')
-        end
-
-        local tab_complete = function(fallback)
-            local copilot_accept = vim.fn['copilot#Accept']
-            local copilot_keys = ''
-            if copilot_accept then
-                local ok, copilot_keys_ = pcall(copilot_accept)
-                if ok then
-                    copilot_keys = copilot_keys_
-                end
-            end
-            local has_avante, avante_api = pcall(require, 'avante.api')
-            local avante_suggestion = nil
-            if has_avante then
-                avante_suggestion = avante_api.get_suggestion()
-            end
-            local has_copilot_lua, copilot_lua_suggestion = pcall(require, 'copilot.suggestion')
-
-            local buf = vim.api.nvim_get_current_buf()
-            local buftype = vim.bo[buf].buftype
-            if buftype == '' then
-                if copilot_keys ~= '' then
-                    vim.api.nvim_feedkeys(copilot_keys, 'i', true)
-                elseif avante_suggestion and avante_suggestion:is_visible() then
-                    avante_suggestion:accept()
-                elseif has_copilot_lua and copilot_lua_suggestion.is_visible() then
-                    copilot_lua_suggestion.accept_line()
-                elseif cmp.visible() then
-                    cmp.select_next_item()
-                elseif luasnip.expand_or_jumpable() then
-                    vim.fn.feedkeys(replace_termcodes('<Plug>luasnip-expand-or-jump'), '')
-                elseif check_backspace() then
-                    vim.fn.feedkeys(replace_termcodes('<Tab>'), 'n')
-                else
-                    if fallback then
-                        fallback()
-                    end
-                end
-            else
-                if fallback then
-                    fallback()
-                end
-            end
-        end
-
+        ------------------------------------------------------------------
+        -- Formatting
+        ------------------------------------------------------------------
         require("conform").setup({
             formatters_by_ft = {
                 lua = { "stylua" },
-                go = { "gofumpt" },
+                -- gopls formats Go (gofumpt = true below); imports are organized by the
+                -- *.go BufWritePre autocmd in hamed/init.lua.
+                go = { lsp_format = "prefer" },
                 rust = { "rustfmt" },
                 -- javascript = { "biome" },
                 -- typescript = { "biome" },
@@ -86,90 +35,49 @@ return {
             },
             format_on_save = {
                 timeout_ms = 500,
-                lsp_fallback = true,
+                lsp_format = "fallback",
             },
         })
-        local cmp_lsp = require("cmp_nvim_lsp")
-        local capabilities = vim.tbl_deep_extend(
-            "force",
-            {},
-            vim.lsp.protocol.make_client_capabilities(),
-            cmp_lsp.default_capabilities())
 
         require("fidget").setup({})
-        require("mason").setup()
-        require("mason-lspconfig").setup({
-            ensure_installed = {
-                "lua_ls",
-                "rust_analyzer",
-                -- "gopls",
-                "templ",
-                -- "pyright", -- Install per project instead
-                -- "delve"
-                -- "golangci_lint_ls",
-            },
-            handlers = {
-                function(server_name) -- default handler (optional)
-                    require("lspconfig")[server_name].setup {
-                        capabilities = capabilities,
-                        opts = {
-                            inlay_hints = {
-                                enabled = true,
-                                show_parameter_hints = true,
-                                parameter_hints_prefix = " ",
-                                other_hints_prefix = " ",
-                            },
-                        },
-                    }
-                end,
 
-                zls = function()
-                    local lspconfig = require("lspconfig")
-                    lspconfig.zls.setup({
-                        root_dir = lspconfig.util.root_pattern(".git", "build.zig", "zls.json"),
-                        settings = {
-                            zls = {
-                                enable_inlay_hints = true,
-                                enable_snippets = true,
-                                warn_style = true,
-                            },
-                        },
-                    })
-                    vim.g.zig_fmt_parse_errors = 0
-                    vim.g.zig_fmt_autosave = 0
-                end,
-                ["lua_ls"] = function()
-                    local lspconfig = require("lspconfig")
-                    lspconfig.lua_ls.setup {
-                        capabilities = capabilities,
-                        settings = {
-                            Lua = {
-                                runtime = { version = "Lua 5.1" },
-                                diagnostics = {
-                                    globals = { "bit", "vim", "it", "describe", "before_each", "after_each" },
-                                }
-                            }
-                        }
-                    }
-                end
-            }
+        ------------------------------------------------------------------
+        -- Completion (blink.cmp)
+        ------------------------------------------------------------------
+        require("blink.cmp").setup({
+            keymap = {
+                -- default preset: <C-y> accept (selects first item if none is selected),
+                -- <C-n>/<C-p> next/prev, <C-space> open menu / toggle docs, <C-e> hide
+                preset = "default",
+                ["<CR>"] = { "accept", "fallback" }, -- only accepts an explicitly selected item
+                ["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
+                ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
+            },
+            snippets = { preset = "luasnip" },
+            sources = {
+                default = { "lsp", "path", "snippets", "buffer" },
+            },
+            completion = {
+                list = { selection = { preselect = false, auto_insert = false } },
+                menu = { border = "rounded" },
+                documentation = { auto_show = true, window = { border = "rounded" } },
+            },
+            fuzzy = { implementation = "prefer_rust_with_warning" },
         })
 
-        local lspconfig = require("lspconfig")
+        ------------------------------------------------------------------
+        -- LSP servers (vim.lsp.config / vim.lsp.enable, Neovim 0.11+).
+        -- nvim-lspconfig only supplies the per-server defaults in its lsp/ dir;
+        -- everything below is merged on top of those.
+        ------------------------------------------------------------------
+        vim.lsp.config("*", {
+            capabilities = require("blink.cmp").get_lsp_capabilities(),
+        })
 
-        vim.lsp.enable('ruff', {})
-        vim.lsp.enable('dprint', {})
-
-        -- vim.lsp.enable('biome', {
-        --     workspace_required = false,
-        -- })
-
-        vim.lsp.enable('gopls', {
-            capabilities = capabilities,
+        vim.lsp.config("gopls", {
             settings = {
                 gopls = {
                     codelenses = {
-                        gc_details = false,
                         generate = true,
                         regenerate_cgo = true,
                         run_govulncheck = true,
@@ -192,8 +100,6 @@ return {
                         unusedparams = true,
                         shadow = true,
                         unusedwrite = true,
-                        useany = true,
-                        modernize = true,
                     },
                     gofumpt = true,
                     staticcheck = true,
@@ -205,54 +111,50 @@ return {
             },
         })
 
-        vim.lsp.enable('nixd')
-
-        vim.lsp.enable('eslint')
-
-        local cmp_select = { behavior = cmp.SelectBehavior.Select }
-
-        cmp.setup({
-            preselect = cmp.PreselectMode.None,
-            snippet = {
-                expand = function(args)
-                    require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-                end,
-            },
-            mapping = cmp.mapping.preset.insert({
-                -- `Enter` key to confirm completion
-                ['<CR>'] = cmp.mapping.confirm({ select = false }),
-
-                ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-                ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-                ['<C-y>'] = cmp.mapping.confirm({ select = true }),
-                ["<C-Space>"] = cmp.mapping.complete(),
-                ['<Tab>'] = tab_complete,
-            }),
-            sources = cmp.config.sources({
-                { name = "copilot", group_index = 2 },
-                { name = 'nvim_lsp' },
-                { name = 'luasnip' }, -- For luasnip users.
-                { name = "path" },
-                { name = "calc" },
-                { name = "emoji" }, -- load for writing only
-            }, {
-                { name = 'path' },
-                { name = 'buffer' },
-            }),
-            completion = {
-                completeopt = 'menu,menuone,noinsert',
-            },
-            window = {
-                completion = cmp.config.window.bordered()
-            },
-            formatting = {
-                fields = { 'kind', 'abbr', 'menu' },
-                format = function(_, vim_item)
-                    vim_item.menu = vim_item.kind
-                    return vim_item
-                end,
+        vim.lsp.config("lua_ls", {
+            settings = {
+                Lua = {
+                    runtime = { version = "LuaJIT" },
+                    diagnostics = {
+                        globals = { "bit", "vim", "it", "describe", "before_each", "after_each" },
+                    },
+                },
             },
         })
+
+        vim.lsp.config("zls", {
+            settings = {
+                zls = {
+                    enable_inlay_hints = true,
+                    enable_snippets = true,
+                    warn_style = true,
+                },
+            },
+        })
+        vim.g.zig_fmt_parse_errors = 0
+        vim.g.zig_fmt_autosave = 0
+
+        require("mason").setup()
+        -- automatic_enable (default) runs vim.lsp.enable() for every mason-installed server.
+        require("mason-lspconfig").setup({
+            ensure_installed = {
+                "lua_ls",
+                "rust_analyzer",
+                "templ",
+                -- "pyright", -- Install per project instead
+            },
+        })
+
+        -- Servers that are installed outside mason (globally or per project via
+        -- devenv/uv). Only enable the ones that are actually on PATH.
+        for _, server in ipairs({ "gopls", "nixd", "eslint", "ruff", "dprint", "zls" }) do
+            local cmd = vim.lsp.config[server] and vim.lsp.config[server].cmd
+            -- eslint's cmd is a function (it resolves the server from node_modules), so
+            -- there is nothing to probe; lspconfig only starts it when a project uses eslint.
+            if type(cmd) ~= "table" or vim.fn.executable(cmd[1]) == 1 then
+                vim.lsp.enable(server)
+            end
+        end
 
         vim.diagnostic.config({
             virtual_text = true,
@@ -261,7 +163,7 @@ return {
                 focusable = false,
                 style = "minimal",
                 border = "rounded",
-                source = "always",
+                source = true,
                 header = "",
                 prefix = "",
             },

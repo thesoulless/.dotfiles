@@ -37,8 +37,9 @@ return {
         lazy = false,
         config = function()
             local dap = require("dap")
-            dap.set_log_level("DEBUG")
+            dap.set_log_level("WARN")
 
+            vim.keymap.set("n", "<F5>", dap.continue, { desc = "Debug: Continue" })
             vim.keymap.set("n", "<F8>", dap.continue, { desc = "Debug: Continue" })
             vim.keymap.set("n", "<F10>", dap.step_over, { desc = "Debug: Step Over" })
             vim.keymap.set("n", "<F11>", dap.step_into, { desc = "Debug: Step Into" })
@@ -47,6 +48,10 @@ return {
             vim.keymap.set("n", "<leader>Q", function()
                 dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
             end, { desc = "Debug: Set Conditional Breakpoint" })
+            vim.keymap.set("n", "<leader>lp", function()
+                dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
+            end, { desc = "Debug: Set Log Point" })
+            vim.keymap.set("n", "<leader>dl", dap.run_last, { desc = "Debug: Run Last" })
         end
     },
 
@@ -114,6 +119,8 @@ return {
                 { desc = "Debug: toggle scopes ui" })
             vim.keymap.set("n", "<leader>dc", function() toggle_debug_ui("console") end,
                 { desc = "Debug: toggle console ui" })
+            vim.keymap.set("n", "<leader>w", dapui.open, { desc = "Debug: open UI" })
+            vim.keymap.set("n", "<leader>W", dapui.close, { desc = "Debug: close UI" })
 
             vim.api.nvim_create_autocmd("BufEnter", {
                 group = "DapGroup",
@@ -153,7 +160,7 @@ return {
     {
         "jay-babu/mason-nvim-dap.nvim",
         dependencies = {
-            "williamboman/mason.nvim",
+            "mason-org/mason.nvim",
             "mfussenegger/nvim-dap",
             "neovim/nvim-lspconfig",
         },

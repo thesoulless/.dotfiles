@@ -6,7 +6,7 @@ return {
 
     dependencies = {
         "nvim-lua/plenary.nvim",
-        "nvim-telescope/telescope-fzy-native.nvim",
+        { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
         { "nvim-telescope/telescope-ui-select.nvim", event = "VeryLazy" }
     },
 
@@ -50,7 +50,7 @@ return {
         })
 
         require("telescope").load_extension("git_worktree")
-        require("telescope").load_extension("fzy_native")
+        require("telescope").load_extension("fzf")
         require("telescope").load_extension("ui-select")
 
         local builtin = require("telescope.builtin")
