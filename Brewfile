@@ -3,7 +3,6 @@
 # `brew bundle cleanup` prunes anything not listed. Regenerate with
 # `brew bundle dump --force --file=Brewfile` (then re-curate).
 tap "elastic/tap"
-tap "hashicorp/tap", trusted: true
 tap "jesseduffield/lazygit"
 tap "kardolus/chatgpt-cli"
 tap "temporalio/brew"
@@ -76,6 +75,8 @@ brew "neovim"
 brew "node"
 # Modern shell for the GitHub era
 brew "nushell"
+# Drop-in replacement for Terraform. Infrastructure as Code Tool
+brew "opentofu"
 # 7-Zip (high compression file archiver) implementation
 brew "p7zip"
 # Password manager
@@ -86,8 +87,6 @@ brew "pspg"
 brew "ripgrep"
 # Organize software neatly under a single directory tree (e.g. /usr/local)
 brew "stow"
-# Tool to build, change, and version infrastructure (removed from homebrew-core; HashiCorp tap)
-brew "hashicorp/tap/terraform"
 # Official tldr client written in Rust
 brew "tlrc"
 # Terminal multiplexer
