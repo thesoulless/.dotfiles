@@ -1,19 +1,19 @@
     if ([$env.HOME $env.USER] | all {nu-check}) {
 
         # Set up the per-user profile.
-        mut NIX_LINK = [$env.HOME '.nix-profile'] | path join;
-        mut NIX_LINK_NEW = [$env.HOME '.local/state/nix/profile'];
+        mut NIX_LINK = ([$env.HOME '.nix-profile'] | path join);
+        # Keep this a string throughout: since nushell 0.114 a `mut` cannot change type.
+        mut NIX_LINK_NEW = ([$env.HOME '.local/state/nix/profile'] | path join);
         if 'XDG_STATE_HOME' in $env {
-            $NIX_LINK_NEW = [$env.XDG_STATE_HOME 'nix/profile'];
+            $NIX_LINK_NEW = ([$env.XDG_STATE_HOME 'nix/profile'] | path join);
         }
-        $NIX_LINK_NEW = ($NIX_LINK_NEW | path join);
         if ($NIX_LINK_NEW | path exists) {
             $NIX_LINK = $NIX_LINK_NEW;
         }
 
         # Set up environment.
         # This part should be kept in sync with nixpkgs:nixos/modules/programs/environment.nix
-        let NIX_PROFILES = (['@localstatedir@/nix/profiles/default' $NIX_LINK] | str join ' ');
+        let NIX_PROFILES = (['/nix/var/nix/profiles/default' $NIX_LINK] | str join ' ');
 
         # Populate bash completions, .desktop files, etc
         mut XDG_DATA_DIRS = '';
