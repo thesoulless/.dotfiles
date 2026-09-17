@@ -43,6 +43,8 @@
             $NIX_SSL_CERT_FILE = ([$NIX_LINK 'etc/ssl/certs/ca-bundle.crt'] | path join);
         } else if ([$NIX_LINK 'etc/ca-bundle.crt'] | path join | path exists) { # old cacert in Nix profile
             $NIX_SSL_CERT_FILE = ([$NIX_LINK '/etc/ca-bundle.crt'] | path join);
+        } else if ('/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt' | path exists) { # cacert in the default Nix profile (macOS multi-user install)
+            $NIX_SSL_CERT_FILE = '/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt';
         }
 
         # Only use MANPATH if it is already set. In general `man` will just simply
@@ -56,6 +58,10 @@
 
         $env.NIX_PROFILES = $NIX_PROFILES
         $env.XDG_DATA_DIRS = $XDG_DATA_DIRS
-        $env.NIX_SSL_CERT_FILE = $NIX_SSL_CERT_FILE
+        # Empty or bogus makes Nix's OpenSSL trust nothing
+        # (UNABLE_TO_GET_ISSUER_CERT_LOCALLY in every Nix-built node/curl/git).
+        if $NIX_SSL_CERT_FILE != '' {
+            $env.NIX_SSL_CERT_FILE = $NIX_SSL_CERT_FILE
+        }
         $env.PATH = ($env.PATH | prepend ([$NIX_LINK 'bin'] | path join))
     }
