@@ -66,7 +66,6 @@ let env_vars = {
     XDG_CONFIG_HOME: ($env.HOME ++ "/.config")
     VIMRUNTIME: ($nvim_prefix ++ "/share/nvim/runtime")
     VIM: 'nvim'
-    GOROOT: '/usr/local/go'
 }
 load-env $env_vars
 

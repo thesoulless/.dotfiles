@@ -47,13 +47,14 @@ $env.config.completions.external = {
 ####################################################
 # Nu Config
 ####################################################
+$env.config.show_banner = false
 $env.config.buffer_editor = "nvim"
 $env.config.edit_mode = "vi"
 $env.config.cursor_shape.vi_normal = "inherit"
 $env.config.cursor_shape.vi_insert = "inherit"
-# env_change.PWD is owned by zoxide (sourced above) and the devenv autoload hook
-# (autoload/devenv-hook.nu). Never reassign it with `= [...]` — that wipes those;
-# always `| append`. So nothing extra is wired here.
+# env_change.PWD is owned by zoxide (sourced above); the devenv autoload hook
+# (autoload/devenv-hook.nu) appends to pre_prompt. Never reassign either with
+# `= [...]` — that wipes those; always `| append`. So nothing extra is wired here.
 
 # Source the Nix profile once at startup so nix-installed tools and env vars are
 # present (the nushell equivalent of /etc/profile.d/nix-daemon.sh).
