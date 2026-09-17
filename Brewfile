@@ -2,8 +2,11 @@
 # CLI packages. Install/sync with `brew bundle install --file=Brewfile`;
 # `brew bundle cleanup` prunes anything not listed. Regenerate with
 # `brew bundle dump --force --file=Brewfile` (then re-curate).
+tap "elastic/tap"
 tap "hashicorp/tap", trusted: true
-tap "railwaycat/emacsmacport", trusted: true
+tap "jesseduffield/lazygit"
+tap "kardolus/chatgpt-cli"
+tap "temporalio/brew"
 tap "xo/xo", trusted: true
 # Run your GitHub Actions locally
 brew "act"
@@ -106,11 +109,13 @@ brew "zoxide"
 # Universal command-line interface for SQL databases (used by the `db` helper).
 # Not a brew "leaf", so `brew bundle dump` omits it — keep this line by hand.
 brew "xo/xo/usql"
+cask "font-jetbrains-mono"
 go "github.com/klauspost/asmfmt/cmd/asmfmt"
 go "github.com/kisielk/errcheck"
 go "github.com/davidrjenni/reftools/cmd/fillstruct"
 go "github.com/google/go-licenses"
 go "github.com/rogpeppe/godef"
+go "github.com/golangci/golangci-lint/cmd/golangci-lint"
 go "golang.org/x/tools/gopls"
 go "github.com/jstemmer/gotags"
 go "github.com/koron/iferr"
