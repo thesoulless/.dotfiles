@@ -56,7 +56,9 @@ let priority_paths = [
 ]
 path add ...$priority_paths
 
-$env.PATH = ($env.PATH | append ((go env GOPATH | str trim) ++ "/bin"))
+# Spelling out the default beats `go env GOPATH`: that spawns the go tool for a
+# value we already know, and costs 50-280 ms of startup depending on cache warmth.
+$env.PATH = ($env.PATH | append ($env.GOPATH? | default ($env.HOME | path join "go") | path join "bin"))
 
 #########################################################################
 # Env vars

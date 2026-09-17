@@ -27,6 +27,23 @@ $env._DEVENV_HOOK_UNTRUSTED = ""
 let _devenv_hook_dir = ("_DEVENV_HOOK_DIR" in $env)
 hide-env -i _DEVENV_HOOK_DIR
 
+# devenv decides a directory is a project by walking up for a `devenv.nix`
+# (a lone `devenv.yaml` is not one). Mirrored here so the hook can answer
+# "nothing to activate" from a few stats instead of a 50-400 ms devenv spawn.
+def _devenv_project_dir [] {
+    mut dir = $env.PWD
+    loop {
+        if ([$dir devenv.nix] | path join | path exists) {
+            return $dir
+        }
+        let parent = ($dir | path dirname)
+        if $parent == $dir {
+            return null
+        }
+        $dir = $parent
+    }
+}
+
 def --env _devenv_hook [] {
     if ("DEVENV_ROOT" in $env) {
         if $_devenv_hook_dir {
@@ -47,6 +64,11 @@ def --env _devenv_hook [] {
         return
     }
     $env._DEVENV_HOOK_ACTIVATED = ""
+
+    if (_devenv_project_dir) == null {
+        $env._DEVENV_HOOK_UNTRUSTED = ""
+        return
+    }
 
     let result = (^devenv hook-should-activate | complete)
     let retrying = ($env._DEVENV_HOOK_UNTRUSTED == $env.PWD)
@@ -89,9 +111,9 @@ def --env _devenv_hook [] {
     }
 }
 
-# Run on every prompt. hook-should-activate is cheap, so there's no separate
-# env_change/PWD trigger or trust-DB stamp: each prompt re-checks, which makes
-# `devenv allow`/`revoke` (and out-of-tree bindings) take effect immediately.
+# Run on every prompt: inside a project each prompt re-checks, so `devenv
+# allow`/`revoke` take effect without a re-`cd`; outside one the walk above
+# short-circuits before anything is spawned.
 $env.config = ($env.config | upsert hooks.pre_prompt (
     ($env.config | get -o hooks.pre_prompt | default []) | append {|| _devenv_hook }
 ))
