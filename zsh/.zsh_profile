@@ -3,8 +3,7 @@ alias vi="nvim"
 alias g="git"
 alias gw="g worktree"
 alias gwa="gw add"
-alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
-alias tf="terraform"
+alias tf="tofu"
 
 VIM="nvim"
 
@@ -19,7 +18,6 @@ addToPath() {
 }
 
 addToPath $HOME/.local/scripts
-# Homebrew (only nushell/antidote/fzf until migration step 2). Appended, so the
-# Nix paths that nix-darwin's /etc/zshenv puts first keep winning.
-addToPath /opt/homebrew/bin
-addToPath /opt/homebrew/sbin
+# Last resort for hand-installed binaries that have no nixpkgs package;
+# machine-specific packaged tools belong in hosts/<name>.nix instead.
+addToPath $HOME/.local/bin

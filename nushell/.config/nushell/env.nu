@@ -25,8 +25,7 @@ alias vi = nvim
 alias g = git
 alias gw = g worktree
 alias gwa = gw add
-alias tailscale = /Applications/Tailscale.app/Contents/MacOS/Tailscale
-alias tf = terraform
+alias tf = tofu
 
 #########################################################################
 # PATH
@@ -40,9 +39,6 @@ let priority_paths = [
     # these from nix-darwin's /etc/zshrc, nushell has to add them itself.
     $"/etc/profiles/per-user/($env.USER)/bin"
     "/run/current-system/sw/bin"
-    "/opt/homebrew/bin"
-    "/opt/homebrew/sbin"
-    "/opt/homebrew/opt/curl/bin"
     "~/bin"
     "/usr/local/bin"
     "/usr/bin"
@@ -51,17 +47,12 @@ let priority_paths = [
     "/sbin"
     "/usr/local/sbin"
     "~/.local/scripts"
-    "~/.local/bin"
-    "~/.cargo/bin"
-    "~/.deno/bin"
-    "/usr/local/go/bin"
     "/nix/var/nix/profiles/default/bin"
 ]
 path add ...$priority_paths
-
-# Spelling out the default beats `go env GOPATH`: that spawns the go tool for a
-# value we already know, and costs 50-280 ms of startup depending on cache warmth.
-$env.PATH = ($env.PATH | append ($env.GOPATH? | default ($env.HOME | path join "go") | path join "bin"))
+# Last resort for hand-installed binaries that have no nixpkgs package;
+# machine-specific packaged tools belong in hosts/<name>.nix instead.
+$env.PATH = ($env.PATH | append ($env.HOME | path join ".local/bin"))
 
 #########################################################################
 # Env vars
@@ -72,28 +63,6 @@ let env_vars = {
 load-env $env_vars
 
 $env.GIT_EDITOR = "nvim"
-$env.DENO_INSTALL = ("/Users/" ++ $env.USER ++ "/.deno")
-$env.CLAUDE_CODE_EXECUTABLE = ($env.HOME ++ "/.local/bin/claude")
-#########################################################################
-# fnm (Fast Node Manager)
-#########################################################################
-$env.FNM_DIR = ($env.HOME ++ "/.local/share/fnm")
-$env.FNM_LOGLEVEL = "info"
-$env.FNM_NODE_DIST_MIRROR = "https://nodejs.org/dist"
-$env.FNM_COREPACK_ENABLED = "false"
-$env.FNM_RESOLVE_ENGINES = "true"
-$env.FNM_VERSION_FILE_STRATEGY = "local"
-$env.FNM_ARCH = "arm64"
-
-# Create a per-session multishell symlink pointing to the default node version
-let fnm_multishell_dir = ([$env.HOME ".local/state/fnm_multishells" (random uuid)] | path join)
-let fnm_default = ($env.FNM_DIR | path join "aliases/default")
-if ($fnm_default | path exists) {
-    ln -s ($fnm_default | path expand) $fnm_multishell_dir
-    $env.FNM_MULTISHELL_PATH = $fnm_multishell_dir
-    $env.PATH = ($env.PATH | prepend ($fnm_multishell_dir | path join "bin"))
-}
-
 source ~/.env.local.nu
 
 #########################################################################

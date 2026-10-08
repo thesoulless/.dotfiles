@@ -1,9 +1,5 @@
-# Nix
-if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-fi
-
-source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
+# antidote: home-manager links ~/.local/share/antidote to the Nix package.
+source "$HOME/.local/share/antidote/antidote.zsh"
 
 zmodload zsh/complist
 autoload -Uz compinit
@@ -33,7 +29,7 @@ PROMPT='%(?.%F{green}.%F{red})➜%f %F{cyan}%~%f$(git_prompt_info) '
 zstyle ':completion:*' ignored-patterns 'VCS_INFO_*' '*_prompt_info'
 
 # Tab widget: accept the shadow suggestion when present; otherwise insert a literal tab.
-# (Bound below, after ~/.fzf.zsh, so fzf-completion doesn't steal ^I.)
+# (Bound below, after fzf's init, so fzf-completion doesn't steal ^I.)
 _tab_accept_suggestion() {
   if [[ -n "$POSTDISPLAY" ]]; then
     zle autosuggest-accept
@@ -44,12 +40,10 @@ _tab_accept_suggestion() {
 zle -N _tab_accept_suggestion
 
 export XDG_CONFIG_HOME="$HOME/.config"
-export CLAUDE_CODE_EXECUTABLE="$HOME/.local/bin/claude"
 
 eval "$(devenv hook zsh)"
 eval "$(zoxide init zsh)"
 eval "$(atuin init zsh)"
-eval "$(fnm env --use-on-cd --shell zsh)"
 
 source ~/.zsh_profile
 
@@ -59,9 +53,10 @@ else
     print "404: ~/.zshrc.local not found."
 fi
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# Key bindings (^R/^T/alt-c) and ** completion straight from the installed fzf.
+eval "$(fzf --zsh)"
 
-# Bind tab AFTER fzf, since ~/.fzf.zsh binds ^I to fzf-completion and would otherwise win.
+# Bind tab AFTER fzf, since `fzf --zsh` binds ^I to fzf-completion and would otherwise win.
 bindkey -M viins '^I' _tab_accept_suggestion
 bindkey -M emacs '^I' _tab_accept_suggestion
 
@@ -77,16 +72,6 @@ bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect '^M' .accept-line
 bindkey -M menuselect '^[' send-break
 
-# conda is intentionally NOT initialized at startup (it slowed every shell and
-# uv is the day-to-day Python tool). To use it on demand in a session, run:
-#   eval "$(/Users/hamed/miniconda3/bin/conda shell.zsh hook)"
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/hamed/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/hamed/Downloads/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/hamed/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/hamed/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
-
 db() {
     export USQL_PAGER='pspg';
     usql $@;
@@ -98,8 +83,3 @@ fi
 
 # zprof
 
-# ~/.local/bin: claude and other hand-installed tools (was uv's env file).
-export PATH="$HOME/.local/bin:$PATH"
-. "/Users/hamed/.deno/env"
-
-. "$HOME/.cargo/env"

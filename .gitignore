@@ -1,5 +1,3 @@
-bin/.local/bin
-
 .DS_Store
 # `nix build` output symlink
 result

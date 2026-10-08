@@ -2,51 +2,76 @@
 { pkgs, ... }:
 
 {
-  # CLI tools that used to be `brew "..."` lines in the Brewfile. All verified
-  # available for aarch64-darwin in nixpkgs-unstable (2026-10).
+  programs.git = {
+    enable = true;
+    settings.user = {
+      name = "Hamed Nemati";
+      email = "hitech.innovative@gmail.com";
+    };
+  };
+
+  # Shell init snippets generated at build time from the exact atuin/zoxide in
+  # this closure, so they can never go stale on upgrade (replaces
+  # scripts/nushell-init.sh). nushell/config.nu sources them from
+  # ~/.local/share/nushell/init/. Deliberately not under a vendor/autoload
+  # dir: config.nu controls the load order explicitly.
+  xdg.dataFile = {
+    # ~/.local/share/antidote -> the store copy; .zshrc sources it from there.
+    # (The per-user profile only links a fixed set of share/ subdirs, and
+    # share/antidote is not one of them.)
+    "antidote".source = "${pkgs.antidote}/share/antidote";
+    # atuin init wants a writable $HOME for its settings; the hook gives it one.
+    "nushell/init/atuin.nu".source =
+      pkgs.runCommand "atuin-init.nu" { nativeBuildInputs = [ pkgs.writableTmpDirAsHomeHook ]; } ''
+        ${pkgs.atuin}/bin/atuin init nu > $out
+      '';
+    "nushell/init/zoxide.nu".source = pkgs.runCommand "zoxide-init.nu" { } ''
+      ${pkgs.zoxide}/bin/zoxide init nushell > $out
+    '';
+  };
+
+  # CLI tools wanted on every machine (work-only ones: hosts/work.nix). All
+  # verified available for aarch64-darwin in nixpkgs-unstable (2026-10).
   # Library-only formulae (little-cms2, jpeg-xl, aom, harfbuzz, openjpeg, webp,
   # libheif) are gone: ffmpeg/imagemagick bring their own deps under Nix.
   home.packages = with pkgs; [
-    act
+    antidote
     ast-grep
     atuin
     cachix
-    caddy
     carapace
     coreutils-prefixed   # g-prefixed like Homebrew's, so BSD ls/date/sed stay the default
     devenv
     direnv
     dprint
-    e2fsprogs
     fd
     ffmpeg
-    fnm
+    fzf
     ghostscript
-    git                  # nixpkgs' git ships git-credential-osxkeychain on darwin
     glow
     graphviz
     htop
     imagemagick
     jq
-    kubectl              # was: kubernetes-cli
     lazygit
+    lua-language-server  # lua_ls for nvim (was mason-installed)
     mkcert
     neovim
-    nodejs               # LTS global fallback (was: node); bundles corepack, so no separate package
-    opentofu
+    nixd                 # Nix LSP; nvim enables it when on PATH
+    nixfmt
+    nodejs               # LTS; bundles corepack. Per-project versions come from devenv.
+    nushell
     p7zip
     pass
     pspg
     ripgrep
     stow
+    stylua               # Lua formatter conform expects
     tlrc
     tmux
     tokei
     tree-sitter          # was: tree-sitter-cli
-    ttygif
     usql                 # was: xo/xo/usql (tap no longer needed)
-    watchman
-    web-ext
     yt-dlp
     zoxide
   ];

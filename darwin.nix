@@ -5,8 +5,8 @@
   nixpkgs.hostPlatform = "aarch64-darwin";
   nixpkgs.config.allowUnfree = true;
 
-  # Owner of the Homebrew install and of user-scoped options such as
-  # system.defaults. Also the account that runs `darwin-rebuild`.
+  # The account that runs `darwin-rebuild`; user-scoped options such as
+  # system.defaults apply to it.
   system.primaryUser = user;
   users.users.${user}.home = "/Users/${user}";
 
@@ -65,17 +65,9 @@
   # Installed into /Library/Fonts/Nix Fonts (was: cask "font-jetbrains-mono").
   fonts.packages = [ pkgs.jetbrains-mono ];
 
-  # Homebrew is not installed by this module (scripts/brew.sh does that); it
-  # only drives `brew bundle` with the list below on every switch.
-  homebrew = {
-    enable = true;
-    # Still Homebrew because the shell configs reference /opt/homebrew paths
-    # (tmux default-shell, antidote.zsh, ~/.fzf.zsh). Migration step 2.
-    brews = [ "antidote" "fzf" "nushell" ];
-    # "uninstall" later, once everything Homebrew-installed is declared here
-    # (avoid "zap" if masApps ever get added: it also removes App Store apps).
-    onActivation.cleanup = "none";
-  };
+  # No Homebrew: nothing is left in it and GUI apps come from IT's Company
+  # Portal. If a cask is ever needed: install Homebrew, then
+  #   homebrew = { enable = true; casks = [ "..." ]; onActivation.cleanup = "uninstall"; };
 
   # Shown by `darwin-rebuild --list-generations`.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;

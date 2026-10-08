@@ -98,7 +98,6 @@ return {
         -- automatic_enable (default) runs vim.lsp.enable() for every mason-installed server.
         require("mason-lspconfig").setup({
             ensure_installed = {
-                "lua_ls",
                 "rust_analyzer",
                 -- "pyright", -- Install per project instead
             },
@@ -106,7 +105,7 @@ return {
 
         -- Servers that are installed outside mason (globally or per project via
         -- devenv/uv). Only enable the ones that are actually on PATH.
-        for _, server in ipairs({ "nixd", "eslint", "ruff", "dprint", "zls" }) do
+        for _, server in ipairs({ "lua_ls", "nixd", "eslint", "ruff", "dprint", "zls" }) do
             local cmd = vim.lsp.config[server] and vim.lsp.config[server].cmd
             -- eslint's cmd is a function (it resolves the server from node_modules), so
             -- there is nothing to probe; lspconfig only starts it when a project uses eslint.
