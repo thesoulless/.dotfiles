@@ -48,6 +48,9 @@
   # /etc/profiles/per-user/<user>/bin on PATH for every zsh (login shell).
   # nushell gets the same paths from nushell/.config/nushell/env.nu.
   programs.zsh.enable = true;
+  # zsh/zshrc runs compinit itself (once, with a cached dump); a second run
+  # here would rebuild the completion dump on every shell start.
+  programs.zsh.enableCompletion = false;
 
   # Apple's Command Line Tools 26.6 bundle a macOS 27 beta SDK next to the real
   # 26.x one, and xcrun picks the newest. Its .tbd stubs declare an arm64e.x1

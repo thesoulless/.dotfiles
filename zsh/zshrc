@@ -3,7 +3,14 @@ source "$HOME/.local/share/antidote/antidote.zsh"
 
 zmodload zsh/complist
 autoload -Uz compinit
-compinit
+# Reuse the completion dump (-C skips the per-start audit and rebuild) and
+# rebuild it only when it is older than a day. nix-darwin's own compinit is
+# disabled in darwin.nix, so this is the single call.
+if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
+    compinit
+else
+    compinit -C
+fi
 zstyle ':completion:*' menu select
 setopt MENU_COMPLETE
 
