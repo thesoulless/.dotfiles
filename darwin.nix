@@ -78,6 +78,22 @@
   # Portal. If a cask is ever needed: install Homebrew, then
   #   homebrew = { enable = true; casks = [ "..." ]; onActivation.cleanup = "uninstall"; };
 
+  # macOS settings. Keyboard ones need a logout/login to apply; Dock and
+  # Finder are restarted by the switch. Unsetting an option here leaves the
+  # value as is (nix-darwin never restores Apple's default), so revert by hand.
+  system.defaults = {
+    NSGlobalDomain = {
+      # Fast key repeat, and holding a key repeats it instead of opening the
+      # accent popup (vim: held j/k must scroll).
+      InitialKeyRepeat = 15;
+      KeyRepeat = 2;
+      ApplePressAndHoldEnabled = false;
+      AppleShowAllExtensions = true;
+    };
+    finder.AppleShowAllExtensions = true;
+    dock.show-recents = false;
+  };
+
   # Shown by `darwin-rebuild --list-generations`.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
 
