@@ -18,7 +18,16 @@ cd ~/.dotfiles
 `install.sh` installs Nix and runs `scripts/darwin.sh`, which builds the system
 (no sudo), prints what changes, then `sudo darwin-rebuild switch`. Everything
 else (packages, fonts, nix settings, dotfile links) comes from the flake.
-Optional, untracked per-machine files: `~/.zshrc.local`, `~/.env.local.nu`.
+Optional, untracked per-machine files: `~/.zshrc.local`, `~/.env.local.nu`,
+and `~/.gitconfig.local` for that machine's default git identity (personal
+directories are matched by rules in `home.nix`; elsewhere git refuses to
+commit until an identity applies):
+
+```ini
+[user]
+	name = Hamed Nemati
+	email = <work address>
+```
 
 ## Day to day
 

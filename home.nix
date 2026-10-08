@@ -30,9 +30,45 @@ in
 
   programs.git = {
     enable = true;
-    settings.user = {
-      name = "Hamed Nemati";
-      email = "hitech.innovative@gmail.com";
+    # Global ignore (~/.config/git/ignore).
+    ignores = [ ".DS_Store" ];
+    # Identity by directory. Order matters: git takes the last matching value,
+    # so the machine-wide default (untracked ~/.gitconfig.local, e.g. the work
+    # identity on the work laptop) comes first and the personal directories
+    # override it. Outside any rule git refuses to commit (useConfigOnly)
+    # rather than guessing.
+    includes =
+      let
+        personal = {
+          user.name = "Hamed Nemati";
+          user.email = "hitech.innovative@gmail.com";
+        };
+      in
+      [
+        { path = "~/.gitconfig.local"; }
+        { condition = "gitdir:~/.dotfiles/"; contents = personal; }
+        { condition = "gitdir:~/go/src/github.com/thesoulless/"; contents = personal; }
+        { condition = "gitdir:~/go/src/github.com/hamednz/"; contents = personal; }
+      ];
+    settings = {
+      user.useConfigOnly = true;
+      init.defaultBranch = "main";
+      # `git push` on a new branch sets upstream itself; pulls rebase.
+      push.autoSetupRemote = true;
+      pull.rebase = true;
+      rebase = {
+        autoStash = true;
+        updateRefs = true; # rebasing a stack moves the branches on it too
+      };
+      fetch.prune = true;
+      # Remember how conflicts were resolved and replay that next time.
+      rerere.enabled = true;
+      merge.conflictStyle = "zdiff3";
+      diff.algorithm = "histogram";
+      branch.sort = "-committerdate";
+      commit.verbose = true; # show the diff in the commit message editor
+      help.autocorrect = "prompt";
+      column.ui = "auto";
     };
   };
 
