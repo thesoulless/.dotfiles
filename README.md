@@ -30,6 +30,10 @@ Optional, untracked per-machine files: `~/.zshrc.local`, `~/.env.local.nu`.
 | Try a tool without installing it | `, tool args` (comma) |
 | Which package ships a binary? | `nix-locate --minimal --at-root /bin/<name>` |
 
+CI builds every host on a macOS runner for each push and PR, and every two
+weeks a workflow opens a `flake.lock` update PR; merge it and run
+`scripts/darwin.sh`. Nothing is merged or applied automatically.
+
 Dotfiles are linked straight into this checkout (`home.nix`), so editing them
 is live without a rebuild. Nix changes need a switch; new files must be
 `git add`ed before Nix can see them.

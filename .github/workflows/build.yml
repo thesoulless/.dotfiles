@@ -1,0 +1,24 @@
+# Build every darwin configuration on a macOS runner so a broken nixpkgs
+# bump or config change fails here, not on the laptop. Build only: nothing is
+# activated. Determinate Nix matches what the machines run.
+name: build
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  darwin:
+    runs-on: macos-latest # Apple Silicon
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - name: Build all hosts
+        run: |
+          hosts=$(nix eval --raw .#darwinConfigurations --apply 'x: builtins.concatStringsSep " " (builtins.attrNames x)')
+          for host in $hosts; do
+            echo "::group::$host"
+            nix build --print-build-logs --no-link ".#darwinConfigurations.\"$host\".system"
+            echo "::endgroup::"
+          done

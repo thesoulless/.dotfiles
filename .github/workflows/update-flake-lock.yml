@@ -1,0 +1,35 @@
+# Every two weeks, open a PR that bumps flake.lock; the build workflow runs on
+# it, so merging the PR and running scripts/darwin.sh is the whole update
+# routine. Nothing is merged or applied automatically.
+# Needs repo setting: Actions > General > "Allow GitHub Actions to create and
+# approve pull requests".
+name: update-flake-lock
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC; the gate below skips odd ISO weeks
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Gate to every other week (cron cannot express a fortnight)
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ $(( $(date +%V) % 2 )) -eq 0 ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v7
+        if: steps.gate.outputs.run == 'true'
+      - uses: DeterminateSystems/determinate-nix-action@v3
+        if: steps.gate.outputs.run == 'true'
+      - uses: DeterminateSystems/update-flake-lock@v29
+        if: steps.gate.outputs.run == 'true'
+        with:
+          pr-title: "flake.lock: update"
+          commit-msg: "flake.lock: update"
