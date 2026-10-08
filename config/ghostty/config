@@ -1,0 +1,4 @@
+# Ghostty comes from nixpkgs (ghostty-bin), so new versions arrive with
+# `nix flake update`; the in-app updater would fight that.
+auto-update = off
+font-family = JetBrains Mono

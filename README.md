@@ -29,6 +29,10 @@ commit until an identity applies):
 	email = <work address>
 ```
 
+GUI apps: Ghostty comes from nixpkgs and appears in `~/Applications/Home
+Manager Apps`. Tailscale is installed from tailscale.com, because its network
+extension has to come from the signed vendor package.
+
 ## Day to day
 
 | Task | Command |

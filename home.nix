@@ -13,6 +13,7 @@ in
     "nvim".source = link "config/nvim";
     "nushell".source = link "config/nushell";
     "atuin/config.toml".source = link "config/atuin/config.toml";
+    "ghostty".source = link "config/ghostty";
     "tmux/tmux.conf".source = link "tmux/tmux.conf";
     # tmux plugins from nixpkgs (no tpm). tmux/tmux.conf sources this file;
     # `set -g @resurrect-*` / `@continuum-*` options must come before it.
@@ -72,6 +73,9 @@ in
     };
   };
 
+  # GitHub CLI; its credential helper lets git push over https after `gh auth login`.
+  programs.gh.enable = true;
+
   # Shell init snippets generated at build time from the exact atuin/zoxide in
   # this closure, so they can never go stale on upgrade (replaces
   # scripts/nushell-init.sh). nushell/config.nu sources them from
@@ -110,6 +114,7 @@ in
     ffmpeg
     fzf
     ghostscript
+    ghostty-bin          # vendor-signed Ghostty.app, lands in ~/Applications/Home Manager Apps
     glow
     graphviz
     htop

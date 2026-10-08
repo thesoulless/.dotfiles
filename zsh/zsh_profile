@@ -4,6 +4,9 @@ alias g="git"
 alias gw="g worktree"
 alias gwa="gw add"
 alias tf="tofu"
+# Tailscale is installed from tailscale.com (its network extension must come
+# from the signed vendor package); the CLI lives inside the app bundle.
+alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
 VIM="nvim"
 
