@@ -20,11 +20,15 @@
   #      with plugins from nixpkgs instead of tpm; nvim drops mason and the
   #      dap stack (language servers come from Nix or devenv). install.sh is
   #      now just "install Nix, switch".
-  #   4. Toolchains on demand: Go/Rust/Python/Node tooling from nixpkgs or
-  #      per-project devenv when a project actually needs it.
-  #   Later, when the base is stable: system.defaults, nix-index-database;
-  #   programs.zsh/nushell/tmux modules only if their generated configs ever
-  #   beat the hand-written ones; Homebrew only if a cask is ever needed.
+  #   4. (this) On-demand tooling and maintenance: nix-index-database + comma
+  #      (`, tool` runs any nixpkgs binary without installing it; a missing
+  #      command names its package), darwin.sh builds without sudo and shows
+  #      the closure diff before switching, Touch ID for sudo inside tmux.
+  #      Toolchains (Go/Rust/Python/Node) still arrive only when a project
+  #      needs them: hosts/<name>.nix or per-project devenv.
+  #   Later: system.defaults (macOS settings) once there is a list of wanted
+  #   ones; programs.zsh/nushell/tmux modules only if their generated configs
+  #   ever beat the hand-written ones; Homebrew only if a cask is ever needed.
   #
   # Layout: config/<app> and tmux/ -> ~/.config/<app>, zsh/ -> ~/.zsh*, bin/ ->
   # ~/.local/scripts (see home.nix). Per-machine differences live in
@@ -48,9 +52,12 @@
     # Determinate Nix's nix-darwin module (daemon, /etc/nix/nix.conf, GC).
     # Deliberately not following our nixpkgs: it ships a prebuilt Nix.
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
+    # Prebuilt nix-locate database (weekly) for command-not-found and comma.
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, determinate, ... }:
+  outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, determinate, nix-index-database, ... }:
     let
       # One entry per machine, keyed by `scutil --get LocalHostName` (what
       # `darwin-rebuild --flake ~/.dotfiles` looks up).
@@ -66,6 +73,7 @@
           specialArgs = { inherit inputs user; };
           modules = [
             determinate.darwinModules.default
+            nix-index-database.darwinModules.nix-index
             ./darwin.nix
             home-manager.darwinModules.home-manager
             {

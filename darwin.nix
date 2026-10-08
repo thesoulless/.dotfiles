@@ -58,9 +58,18 @@
   # (nixpkgs ships its own SDK).
   environment.variables.SDKROOT = "/Library/Developer/CommandLineTools/SDKs/MacOSX26.sdk";
 
-  # `sudo darwin-rebuild switch` with Touch ID. (Inside tmux this needs
-  # pam_reattach, which nix-darwin does not ship; later.)
-  security.pam.services.sudo_local.touchIdAuth = true;
+  # `sudo darwin-rebuild switch` with Touch ID, also inside tmux (pam_reattach).
+  security.pam.services.sudo_local = {
+    touchIdAuth = true;
+    reattach = true;
+  };
+
+  # "command not found" names the nixpkgs package, `nix-locate` searches the
+  # prebuilt index, and `, tool args` runs a binary from nixpkgs without
+  # installing it. This is how tools get tried before they earn a place in
+  # home.nix or hosts/<name>.nix.
+  programs.nix-index.enable = true;
+  programs.nix-index-database.comma.enable = true;
 
   # Installed into /Library/Fonts/Nix Fonts (was: cask "font-jetbrains-mono").
   fonts.packages = [ pkgs.jetbrains-mono ];
