@@ -20,9 +20,6 @@ return {
         require("conform").setup({
             formatters_by_ft = {
                 lua = { "stylua" },
-                -- gopls formats Go (gofumpt = true below); imports are organized by the
-                -- *.go BufWritePre autocmd in hamed/init.lua.
-                go = { lsp_format = "prefer" },
                 rust = { "rustfmt" },
                 -- javascript = { "biome" },
                 -- typescript = { "biome" },
@@ -74,43 +71,6 @@ return {
             capabilities = require("blink.cmp").get_lsp_capabilities(),
         })
 
-        vim.lsp.config("gopls", {
-            settings = {
-                gopls = {
-                    codelenses = {
-                        generate = true,
-                        regenerate_cgo = true,
-                        run_govulncheck = true,
-                        test = true,
-                        tidy = true,
-                        upgrade_dependency = true, -- do I really want this?
-                        vendor = true,
-                    },
-                    hints = {
-                        assignVariableTypes = true,
-                        compositeLiteralFields = true,
-                        compositeLiteralTypes = true,
-                        constantValues = true,
-                        functionTypeParameters = true,
-                        parameterNames = true,
-                        rangeVariableTypes = true,
-                    },
-                    analyses = {
-                        nilness = true,
-                        unusedparams = true,
-                        shadow = true,
-                        unusedwrite = true,
-                    },
-                    gofumpt = true,
-                    staticcheck = true,
-                    usePlaceholders = true,
-                    completeUnimported = true,
-                    directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules", "-_data", "-.direnv", "-.devenv" },
-                    semanticTokens = true,
-                },
-            },
-        })
-
         vim.lsp.config("lua_ls", {
             settings = {
                 Lua = {
@@ -140,14 +100,13 @@ return {
             ensure_installed = {
                 "lua_ls",
                 "rust_analyzer",
-                "templ",
                 -- "pyright", -- Install per project instead
             },
         })
 
         -- Servers that are installed outside mason (globally or per project via
         -- devenv/uv). Only enable the ones that are actually on PATH.
-        for _, server in ipairs({ "gopls", "nixd", "eslint", "ruff", "dprint", "zls" }) do
+        for _, server in ipairs({ "nixd", "eslint", "ruff", "dprint", "zls" }) do
             local cmd = vim.lsp.config[server] and vim.lsp.config[server].cmd
             -- eslint's cmd is a function (it resolves the server from node_modules), so
             -- there is nothing to probe; lspconfig only starts it when a project uses eslint.

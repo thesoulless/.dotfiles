@@ -19,3 +19,7 @@ addToPath() {
 }
 
 addToPath $HOME/.local/scripts
+# Homebrew (only nushell/antidote/fzf until migration step 2). Appended, so the
+# Nix paths that nix-darwin's /etc/zshenv puts first keep winning.
+addToPath /opt/homebrew/bin
+addToPath /opt/homebrew/sbin

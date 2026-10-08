@@ -55,17 +55,6 @@ return {
         end
     },
 
-    -- {
-    --     "leoluz/nvim-dap-go",
-    --     dependencies = { "mfussenegger/nvim-dap" },
-    --     config = function()
-    --         require("dap-go").setup({
-    --             initialize_timeout_sec = 30,
-    --         })
-    --     end,
-    -- },
-
-
     {
         "rcarriga/nvim-dap-ui",
         dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
@@ -166,31 +155,11 @@ return {
         },
         config = function()
             require("mason-nvim-dap").setup({
-                ensure_installed = {
-                    "delve",
-                },
+                -- Adapters are added here per language when needed (e.g. "delve" for Go).
+                ensure_installed = {},
                 automatic_installation = true,
                 handlers = {
                     function(config)
-                        require("mason-nvim-dap").default_setup(config)
-                    end,
-                    delve = function(config)
-                        table.insert(config.configurations, 1, {
-                            args = function() return vim.split(vim.fn.input("args> "), " ") end,
-                            type = "delve",
-                            name = "file",
-                            request = "launch",
-                            program = "${file}",
-                            outputMode = "remote",
-                        })
-                        table.insert(config.configurations, 1, {
-                            args = function() return vim.split(vim.fn.input("args> "), " ") end,
-                            type = "delve",
-                            name = "file args",
-                            request = "launch",
-                            program = "${file}",
-                            outputMode = "remote",
-                        })
                         require("mason-nvim-dap").default_setup(config)
                     end,
                 },

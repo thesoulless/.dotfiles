@@ -12,12 +12,6 @@ function R(name)
     require("plenary.reload").reload_module(name)
 end
 
-vim.filetype.add({
-    extension = {
-        templ = 'templ',
-    }
-})
-
 autocmd('TextYankPost', {
     group = yank_group,
     pattern = '*',
@@ -39,25 +33,6 @@ autocmd({ "BufWritePre" }, {
     group = HamedGroup,
     pattern = "*",
     command = [[%s/\s\+$//e]],
-})
-
--- Organize Go imports through gopls before conform formats the buffer (gofumpt via gopls).
-autocmd("BufWritePre", {
-    group = HamedGroup,
-    pattern = "*.go",
-    callback = function(ev)
-        for _, client in ipairs(vim.lsp.get_clients({ bufnr = ev.buf, name = "gopls" })) do
-            local params = vim.lsp.util.make_range_params(0, client.offset_encoding)
-            params.context = { only = { "source.organizeImports" } }
-            -- 1000ms timeout; bump it if imports only land on the second :w in big repos.
-            local result = client:request_sync("textDocument/codeAction", params, 1000, ev.buf)
-            for _, action in pairs(result and result.result or {}) do
-                if action.edit then
-                    vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
-                end
-            end
-        end
-    end
 })
 
 autocmd('BufEnter', {
@@ -91,7 +66,7 @@ autocmd('LspAttach', {
         vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
         vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
 
-        -- Inlay hints (gopls/rust-analyzer/zls are configured to provide them); <leader>th toggles.
+        -- Inlay hints (rust-analyzer/zls are configured to provide them); <leader>th toggles.
         local client = vim.lsp.get_client_by_id(e.data.client_id)
         if client and client:supports_method("textDocument/inlayHint", e.buf) then
             vim.lsp.inlay_hint.enable(true, { bufnr = e.buf })

@@ -51,11 +51,6 @@ eval "$(zoxide init zsh)"
 eval "$(atuin init zsh)"
 eval "$(fnm env --use-on-cd --shell zsh)"
 
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-
 source ~/.zsh_profile
 
 if [ -f ~/.zshrc.local ]; then
@@ -101,11 +96,10 @@ if [[ "$TERM_PROGRAM" == "ghostty" ]]; then
   export TERM=xterm-256color
 fi
 
-# bun completions
-[ -s "/Users/hamed/.bun/_bun" ] && source "/Users/hamed/.bun/_bun"
 # zprof
 
-. "$HOME/.local/bin/env"
+# ~/.local/bin: claude and other hand-installed tools (was uv's env file).
+export PATH="$HOME/.local/bin:$PATH"
 . "/Users/hamed/.deno/env"
 
 . "$HOME/.cargo/env"

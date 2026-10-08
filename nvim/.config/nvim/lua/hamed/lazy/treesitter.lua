@@ -13,10 +13,10 @@ return {
         local ts = require("nvim-treesitter")
 
         local ensure_installed = {
-            "bash", "c", "css", "diff", "dockerfile", "git_config", "gitcommit", "gitignore", "go", "gomod",
-            "gosum", "gotmpl", "gowork", "hcl", "html", "javascript", "jsdoc", "json", "lua", "make",
-            "markdown", "markdown_inline", "nix", "nu", "python", "query", "regex", "rust", "sql",
-            "ssh_config", "templ", "terraform", "toml", "tsx", "typescript", "vimdoc", "yaml", "zig",
+            "bash", "c", "css", "diff", "dockerfile", "git_config", "gitcommit", "gitignore", "hcl",
+            "html", "javascript", "jsdoc", "json", "lua", "make", "markdown", "markdown_inline", "nix",
+            "nu", "python", "query", "regex", "rust", "sql", "ssh_config", "terraform", "toml", "tsx",
+            "typescript", "vimdoc", "yaml", "zig",
         }
         local installed = ts.get_installed("parsers")
         local missing = vim.tbl_filter(function(lang)

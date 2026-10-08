@@ -36,6 +36,10 @@ alias tf = terraform
 # at lower precedence than the inherited system paths.
 use std/util "path add"
 let priority_paths = [
+    # home-manager (nix-darwin module) and nix-darwin system packages; zsh gets
+    # these from nix-darwin's /etc/zshrc, nushell has to add them itself.
+    $"/etc/profiles/per-user/($env.USER)/bin"
+    "/run/current-system/sw/bin"
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"
     "/opt/homebrew/opt/curl/bin"
@@ -50,7 +54,6 @@ let priority_paths = [
     "~/.local/bin"
     "~/.cargo/bin"
     "~/.deno/bin"
-    "~/.bun/bin"
     "/usr/local/go/bin"
     "/nix/var/nix/profiles/default/bin"
 ]
@@ -69,7 +72,6 @@ let env_vars = {
 load-env $env_vars
 
 $env.GIT_EDITOR = "nvim"
-$env.BUN_INSTALL = ($env.HOME ++ "/.bun")
 $env.DENO_INSTALL = ("/Users/" ++ $env.USER ++ "/.deno")
 $env.CLAUDE_CODE_EXECUTABLE = ($env.HOME ++ "/.local/bin/claude")
 #########################################################################

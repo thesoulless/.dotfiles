@@ -1,23 +1,20 @@
 #!/usr/bin/env bash
-# Install Nix (official installer) and the tools that live in the user's nix
-# profile. `nix-env` is intentionally not used: profiles created by `nix profile`
-# are incompatible with it ("profile is incompatible with 'nix-env'").
+# Install Determinate Nix (multi-user, launchd daemon). Everything else
+# Nix-related (packages, nix.custom.conf, the devenv cache, GC) is declared in
+# flake.nix / darwin.nix / home.nix and applied by scripts/darwin.sh.
+#
+# Why Determinate rather than the nixos.org installer: its daemon is a signed
+# binary that survives macOS major upgrades (the upstream installer's
+# /bin/sh-wrapped launchd jobs got disabled by Background Task Management on
+# macOS 26), it has a real uninstaller (/nix/nix-installer uninstall) and
+# in-place upgrades (sudo determinate-nixd upgrade), and a first-party
+# nix-darwin module. Cost: a vendor fork with a closed daemon; telemetry is
+# opted out in darwin.nix.
 set -eu
 
-if ! command -v nix >/dev/null 2>&1; then
-	curl -L https://nixos.org/nix/install -o /tmp/nix-install.sh
-	sh /tmp/nix-install.sh
-	rm -f /tmp/nix-install.sh
-	# shellcheck disable=SC1091
-	. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+if command -v nix >/dev/null 2>&1; then
+	echo "nix already installed: $(nix --version)"
+	exit 0
 fi
 
-# `nix profile add` (nix >= 2.29) replaced `nix profile install`; support both.
-profile_add() {
-	nix profile add "$1" 2>/dev/null || nix profile install "$1"
-}
-
-profile_add nixpkgs#cachix
-cachix use devenv
-profile_add nixpkgs#devenv
-# Upgrade later with: nix profile upgrade devenv
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
