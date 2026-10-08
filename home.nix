@@ -1,4 +1,4 @@
-# home-manager configuration for the primary user (see flake.nix for the plan).
+# home-manager configuration for the primary user (shared by every host; see README.md).
 { config, pkgs, ... }:
 
 let

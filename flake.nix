@@ -1,41 +1,18 @@
 {
-  # Declarative macOS environment: Determinate Nix + nix-darwin (system,
-  # Homebrew bundle, fonts) + home-manager as a nix-darwin module (user
-  # packages; later shell integration and dotfiles).
+  # Declarative macOS environment: Determinate Nix + nix-darwin (system) +
+  # home-manager as a nix-darwin module (user packages, dotfile links).
+  # README.md has the bootstrap, daily commands and layout; git history has
+  # the migration from the Brewfile/stow setup.
   #
-  # Migration from the Brewfile/stow setup, one committed step at a time:
-  #   1. (done) CLI packages -> home.nix; nix settings, devenv cache, fonts,
-  #      Touch ID sudo -> darwin.nix. The Brewfile's `go install` tools are
-  #      dropped (see step 3). stow still links all configs.
-  #   2. (done) Shell plumbing: nushell/antidote/fzf from Nix and Homebrew
-  #      removed entirely; home-manager generates the atuin/zoxide nushell
-  #      snippets at build time (replaces scripts/nushell-init.sh); zsh uses
-  #      `fzf --zsh` and a linked antidote (replaces ~/.fzf.zsh); tmux starts
-  #      `nu` via zsh's PATH instead of a hardcoded path; programs.git carries
-  #      the identity; fnm dropped in favour of nix nodejs + devenv; nixd,
-  #      nixfmt, stylua, lua-language-server from Nix instead of mason.
-  #   3. (this) Dotfiles: home-manager links every config into this checkout
-  #      (mkOutOfStoreSymlink, so edits stay live without a rebuild); stow and
-  #      its pkg/.config/... layout are gone; tmux config under ~/.config/tmux
-  #      with plugins from nixpkgs instead of tpm; nvim drops mason and the
-  #      dap stack (language servers come from Nix or devenv). install.sh is
-  #      now just "install Nix, switch".
-  #   4. (this) On-demand tooling and maintenance: nix-index-database + comma
-  #      (`, tool` runs any nixpkgs binary without installing it; a missing
-  #      command names its package), darwin.sh builds without sudo and shows
-  #      the closure diff before switching, Touch ID for sudo inside tmux.
-  #      Toolchains (Go/Rust/Python/Node) still arrive only when a project
-  #      needs them: hosts/<name>.nix or per-project devenv.
-  #   Later: system.defaults (macOS settings) once there is a list of wanted
-  #   ones; programs.zsh/nushell/tmux modules only if their generated configs
-  #   ever beat the hand-written ones; Homebrew only if a cask is ever needed.
+  # Principles: everything that has a nixpkgs package comes from here; tools
+  # are tried first with `, tool` (comma) and only then added to home.nix, or
+  # to hosts/<name>.nix when only one machine needs them; toolchains arrive
+  # per project via devenv; configs are linked into this checkout so edits are
+  # live without a rebuild; no Homebrew unless a cask is ever needed; the
+  # untracked ~/.gitconfig.local, ~/.zshrc.local and ~/.env.local.nu hold
+  # what must not be in a public repo.
   #
-  # Layout: config/<app> and tmux/ -> ~/.config/<app>, zsh/ -> ~/.zsh*, bin/ ->
-  # ~/.local/scripts (see home.nix). Per-machine differences live in
-  # hosts/<name>.nix (work vs personal laptop); darwin.nix and home.nix are shared. Binaries that exist in no nixpkgs
-  # package go in ~/.local/bin by hand (last resort, appended to PATH).
-  #
-  # Apply: ./scripts/darwin.sh   (= sudo darwin-rebuild switch --flake ~/.dotfiles)
+  # Apply: ./scripts/darwin.sh   (build, show the closure diff, then switch)
   # Update inputs: nix flake update && ./scripts/darwin.sh
   # Rollback: sudo darwin-rebuild --rollback
   description = "hamed's macOS environment";

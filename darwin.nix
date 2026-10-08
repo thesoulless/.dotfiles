@@ -1,4 +1,4 @@
-# nix-darwin system configuration (see flake.nix for the migration plan).
+# nix-darwin system configuration (shared by every host; see README.md).
 { pkgs, inputs, user, ... }:
 
 {
