@@ -44,6 +44,7 @@ _tab_accept_suggestion() {
 zle -N _tab_accept_suggestion
 
 export XDG_CONFIG_HOME="$HOME/.config"
+export CLAUDE_CODE_EXECUTABLE="$HOME/.local/bin/claude"
 
 eval "$(devenv hook zsh)"
 eval "$(zoxide init zsh)"

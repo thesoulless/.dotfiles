@@ -63,17 +63,15 @@ $env.PATH = ($env.PATH | append ($env.GOPATH? | default ($env.HOME | path join "
 #########################################################################
 # Env vars
 #########################################################################
-let nvim_prefix = (which nvim | get 0?.path? | default "/opt/homebrew" | path expand | path dirname | path dirname)
 let env_vars = {
     XDG_CONFIG_HOME: ($env.HOME ++ "/.config")
-    VIMRUNTIME: ($nvim_prefix ++ "/share/nvim/runtime")
-    VIM: 'nvim'
 }
 load-env $env_vars
 
-$env.GIT_EDITOR = $env.VIM
+$env.GIT_EDITOR = "nvim"
 $env.BUN_INSTALL = ($env.HOME ++ "/.bun")
 $env.DENO_INSTALL = ("/Users/" ++ $env.USER ++ "/.deno")
+$env.CLAUDE_CODE_EXECUTABLE = ($env.HOME ++ "/.local/bin/claude")
 #########################################################################
 # fnm (Fast Node Manager)
 #########################################################################
