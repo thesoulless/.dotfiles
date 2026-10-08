@@ -2,8 +2,6 @@ return {
     "neovim/nvim-lspconfig",
     dependencies = {
         "stevearc/conform.nvim",
-        "mason-org/mason.nvim",
-        "mason-org/mason-lspconfig.nvim",
         "j-hui/fidget.nvim",
         {
             -- Completion. Replaces nvim-cmp + cmp-nvim-lsp/buffer/path/cmdline + cmp_luasnip.
@@ -94,18 +92,9 @@ return {
         vim.g.zig_fmt_parse_errors = 0
         vim.g.zig_fmt_autosave = 0
 
-        require("mason").setup()
-        -- automatic_enable (default) runs vim.lsp.enable() for every mason-installed server.
-        require("mason-lspconfig").setup({
-            ensure_installed = {
-                "rust_analyzer",
-                -- "pyright", -- Install per project instead
-            },
-        })
-
-        -- Servers that are installed outside mason (globally or per project via
-        -- devenv/uv). Only enable the ones that are actually on PATH.
-        for _, server in ipairs({ "lua_ls", "nixd", "eslint", "ruff", "dprint", "zls" }) do
+        -- No mason: servers come from Nix (home.nix) or per project via devenv.
+        -- Enable the ones whose binary is actually on PATH.
+        for _, server in ipairs({ "lua_ls", "nixd", "rust_analyzer", "eslint", "ruff", "dprint", "zls" }) do
             local cmd = vim.lsp.config[server] and vim.lsp.config[server].cmd
             -- eslint's cmd is a function (it resolves the server from node_modules), so
             -- there is nothing to probe; lspconfig only starts it when a project uses eslint.

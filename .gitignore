@@ -1,3 +1,5 @@
 .DS_Store
 # `nix build` output symlink
 result
+# nushell writes its history next to its config
+config/nushell/history.*

@@ -1,7 +1,33 @@
 # home-manager configuration for the primary user (see flake.nix for the plan).
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
+let
+  # Dotfiles are linked straight into this checkout rather than copied into
+  # the store, so an edit is live immediately with no rebuild (what stow did).
+  # Trade-off: they are not part of a generation, so rollback doesn't cover them.
+  dotfiles = "${config.home.homeDirectory}/.dotfiles";
+  link = path: config.lib.file.mkOutOfStoreSymlink "${dotfiles}/${path}";
+in
 {
+  xdg.configFile = {
+    "nvim".source = link "config/nvim";
+    "nushell".source = link "config/nushell";
+    "atuin/config.toml".source = link "config/atuin/config.toml";
+    "tmux/tmux.conf".source = link "tmux/tmux.conf";
+    # tmux plugins from nixpkgs (no tpm). tmux/tmux.conf sources this file;
+    # `set -g @resurrect-*` / `@continuum-*` options must come before it.
+    "tmux/plugins.conf".text = ''
+      run-shell ${pkgs.tmuxPlugins.resurrect.rtp}
+      run-shell ${pkgs.tmuxPlugins.continuum.rtp}
+    '';
+  };
+  home.file = {
+    ".zshrc".source = link "zsh/zshrc";
+    ".zsh_profile".source = link "zsh/zsh_profile";
+    ".zsh_plugins.txt".source = link "zsh/zsh_plugins.txt";
+    ".local/scripts".source = link "bin";
+  };
+
   programs.git = {
     enable = true;
     settings.user = {
@@ -65,7 +91,6 @@
     pass
     pspg
     ripgrep
-    stow
     stylua               # Lua formatter conform expects
     tlrc
     tmux

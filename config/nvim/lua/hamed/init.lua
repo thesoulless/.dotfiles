@@ -23,12 +23,6 @@ autocmd('TextYankPost', {
     end,
 })
 
--- autocmd("BufRead", {
---     group = HamedGroup,
---     pattern = "*",
---     command = [[load_breakpoints()]],
--- })
-
 autocmd({ "BufWritePre" }, {
     group = HamedGroup,
     pattern = "*",

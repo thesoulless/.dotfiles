@@ -1,4 +1,3 @@
-local breakpoints = require('hamed.lazy.utils.session-breakpoints')
 
 return {
     "rmagatti/auto-session",
@@ -15,9 +14,6 @@ return {
             suppressed_dirs = { '~/', '~/Projects', '~/Downloads', '/' },
             log_level = 'error',
 
-            post_save_cmds = { breakpoints.save_session_breakpoints },
-            post_restore_cmds = { breakpoints.restore_session_breakpoints },
-            pre_delete_cmds = { breakpoints.delete_session_breakpoints },
 
             session_lens = {
                 -- If load_on_setup is false, make sure you use `:SessionSearch` to open the picker as it will initialize everything first
