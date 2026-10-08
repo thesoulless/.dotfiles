@@ -63,7 +63,11 @@ let env_vars = {
 load-env $env_vars
 
 $env.GIT_EDITOR = "nvim"
-source ~/.env.local.nu
+# Machine-local, untracked overrides (secrets, work-only env). Optional:
+# `source` needs a parse-time constant, and `source null` is a no-op.
+const local_env = ("~/.env.local.nu" | path expand)
+const local_env_or_null = if ($local_env | path exists) { $local_env } else { null }
+source $local_env_or_null
 
 #########################################################################
 # Sources

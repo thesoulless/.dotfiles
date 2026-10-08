@@ -47,11 +47,8 @@ eval "$(atuin init zsh)"
 
 source ~/.zsh_profile
 
-if [ -f ~/.zshrc.local ]; then
-    source ~/.zshrc.local
-else
-    print "404: ~/.zshrc.local not found."
-fi
+# Machine-local, untracked overrides (secrets, work-only env). Optional.
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
 # Key bindings (^R/^T/alt-c) and ** completion straight from the installed fzf.
 eval "$(fzf --zsh)"
