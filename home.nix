@@ -109,6 +109,7 @@ in
     cachix
     carapace
     coreutils-prefixed   # g-prefixed like Homebrew's, so BSD ls/date/sed stay the default
+    daisydisk
     devenv
     direnv
     dprint
@@ -120,6 +121,7 @@ in
     glow
     graphviz
     htop
+    iina
     imagemagick
     jq
     lazygit
