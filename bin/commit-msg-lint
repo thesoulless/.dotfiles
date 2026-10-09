@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# Personal commit-message lint. Lives outside every repo so it is never pushed
+# or imposed on anyone else; repos opt in through a local .git/hooks shim.
+#
+#   commit-msg-lint <msg-file>      lint a commit message (the hook's use)
+#   commit-msg-lint -               lint stdin (e.g. a PR title + body)
+#   commit-msg-lint --install [dir] add the commit-msg shim to a repo
+#                                   (shared by all its worktrees)
+#
+# Bypass once with `git commit --no-verify`.
+set -euo pipefail
+
+readonly TYPES='feat|fix|refactor|perf|chore|docs|test|ci|build|style|revert'
+readonly SUBJECT_WARN=80
+readonly SUBJECT_MAX=100
+readonly BODY_WARN=80
+
+install_shim() {
+	local dir="${1:-.}" hooks shim
+	hooks="$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir)/hooks"
+	shim="$hooks/commit-msg"
+	if [[ -e "$shim" ]] && ! grep -q 'commit-msg-lint' "$shim"; then
+		echo "commit-msg-lint: $shim exists and is not ours; not touching it" >&2
+		exit 1
+	fi
+	mkdir -p "$hooks"
+	cat >"$shim" <<'EOF'
+#!/bin/sh
+# Personal hook (not versioned): ~/.config/git/hooks/commit-msg-lint
+lint="$HOME/.config/git/hooks/commit-msg-lint"
+[ -x "$lint" ] || exit 0
+exec "$lint" "$1"
+EOF
+	chmod +x "$shim"
+	echo "installed $shim"
+}
+
+if [[ "${1:-}" == "--install" ]]; then
+	install_shim "${2:-.}"
+	exit 0
+fi
+
+src="${1:?usage: commit-msg-lint <msg-file>|-|--install [dir]}"
+[[ "$src" == "-" ]] && src=/dev/stdin
+
+# Drop git's comment lines and everything below the `commit -v` scissors.
+msg="$(sed -e '/^# -\{24\} >8 -\{24\}$/,$d' -e '/^#/d' "$src")"
+subject="$(printf '%s\n' "$msg" | sed -n '1p')"
+
+case "$subject" in
+'' | Merge\ * | Revert\ * | fixup!* | squash!* | amend!*) exit 0 ;;
+esac
+
+errors=()
+warnings=()
+
+if [[ "$subject" =~ ^($TYPES)(\([a-z0-9][a-z0-9.,_/-]*\))?!?:\ [^\ ] ]]; then
+	summary="${subject#*: }"
+	first_word="${summary%% *}"
+	[[ "$first_word" =~ ^[A-Z][a-z]+$ ]] &&
+		warnings+=("summary should start lowercase ('$first_word'), unless it is a proper noun")
+else
+	errors+=("subject must be 'type(scope): summary' with type in {${TYPES//|/, }} and a lowercase scope")
+fi
+[[ "$subject" == *. ]] && errors+=("no trailing period on the subject")
+((${#subject} > SUBJECT_MAX)) && errors+=("subject is ${#subject} chars (max $SUBJECT_MAX)")
+((${#subject} > SUBJECT_WARN && ${#subject} <= SUBJECT_MAX)) &&
+	warnings+=("subject is ${#subject} chars (aim for <= $SUBJECT_WARN)")
+
+second="$(printf '%s\n' "$msg" | sed -n '2p')"
+[[ -n "$second" ]] && errors+=("leave a blank line after the subject")
+
+if printf '%s\n' "$msg" | grep -Eiq '(^|[^a-z])(docs/[^ ]*-plan\.md|[A-Z0-9_-]*PLAN[A-Z0-9_-]*\.md|plan doc|design doc)'; then
+	errors+=("no references to plan/design docs")
+fi
+if printf '%s\n' "$msg" | grep -Eiq '^(co-authored-by:|.*generated with \[?claude)'; then
+	errors+=("no Co-Authored-By / 'Generated with' trailers")
+fi
+
+line_no=0
+while IFS= read -r line; do
+	line_no=$((line_no + 1))
+	((line_no < 3)) && continue
+	# URLs and other unbreakable tokens may run long.
+	[[ "$line" != *" "* ]] && continue
+	((${#line} > BODY_WARN)) && warnings+=("body line $line_no is ${#line} chars (wrap at ~76)")
+done <<<"$msg"
+
+for w in "${warnings[@]+"${warnings[@]}"}"; do echo "commit-msg-lint: warning: $w" >&2; done
+if ((${#errors[@]})); then
+	for e in "${errors[@]}"; do echo "commit-msg-lint: $e" >&2; done
+	echo "commit-msg-lint: subject was: $subject" >&2
+	exit 1
+fi

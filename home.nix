@@ -14,6 +14,8 @@ in
     "nushell".source = link "config/nushell";
     "atuin/config.toml".source = link "config/atuin/config.toml";
     "ghostty".source = link "config/ghostty";
+    # Personal commit-message lint; repos opt in via `commit-msg-lint --install`.
+    "git/hooks/commit-msg-lint".source = link "bin/commit-msg-lint";
     "tmux/tmux.conf".source = link "tmux/tmux.conf";
     # tmux plugins from nixpkgs (no tpm). tmux/tmux.conf sources this file;
     # `set -g @resurrect-*` / `@continuum-*` options must come before it.
@@ -132,6 +134,7 @@ in
     pass
     pspg
     ripgrep
+    rsync                # macOS ships openrsync (rsync 2.6.9 compatible): no --info=progress2
     stylua               # Lua formatter conform expects
     tlrc
     tmux

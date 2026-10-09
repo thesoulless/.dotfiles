@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Pull a directory from another machine into the same place under $HOME.
+#
+#   TARGET=user@host dosync ~/go/src             copy (resumable, never deletes)
+#   TARGET=user@host dosync ~/go/src --verify    copy, then check what still differs
+#   TARGET=user@host dosync ~/go/src --check     only check; silent = in sync
+#
+# TARGET is an ssh destination (tailnet IP or MagicDNS name). Caches and
+# machine-specific junk are excluded; errors go to a log and the screen.
+set -euo pipefail
+
+usage() { sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+: "${TARGET:?not in the environment; use 'TARGET=user@host dosync ...' or 'export TARGET=user@host' first}"
+
+mode=copy dir=""
+for arg in "$@"; do
+	case "$arg" in
+		--check) mode=check ;;
+		--verify) mode=verify ;;
+		-*) usage ;;
+		*) [ -z "$dir" ] || usage; dir="$arg" ;;
+	esac
+done
+[ -n "$dir" ] || usage
+case "$dir" in "~"*) dir="$HOME${dir#\~}" ;; esac
+[[ "$dir" = /* ]] || dir="$PWD/$dir"
+dir="${dir%/}"
+rel="${dir#"$HOME"/}"
+[ "$rel" != "$dir" ] || { echo "dosync: $dir is not under $HOME" >&2; exit 2; }
+
+excludes=(.direnv .devenv node_modules .DS_Store FETCH_HEAD venv .venv .cursor)
+args=(-avh)
+for e in "${excludes[@]}"; do args+=(--exclude "$e"); done
+
+check() {
+	echo "dosync: checking $TARGET:~/$rel against $dir ..."
+	local out
+	if ! out=$(rsync "${args[@]}" --dry-run --itemize-changes "$TARGET:$rel/" "$dir/"); then
+		echo "dosync: check FAILED, rsync could not compare (see above)" >&2
+		return 1
+	fi
+	# Lines starting with >f are files that would still be transferred.
+	if printf '%s\n' "$out" | grep '^>f'; then
+		echo "dosync: NOT in sync, the files above still differ" >&2
+		return 1
+	fi
+	echo "dosync: in sync"
+}
+
+copy() {
+	mkdir -p "$dir" "$HOME/.local/state/dosync"
+	local log="$HOME/.local/state/dosync/$(printf '%s' "$rel" | tr / _).log"
+	rsync "${args[@]}" --info=progress2 --stats "$TARGET:$rel/" "$dir/" 2> >(tee "$log" >&2)
+	if [ -s "$log" ]; then
+		echo "dosync: finished with errors, see $log ($(wc -l <"$log" | tr -d ' ') lines)" >&2
+		return 1
+	fi
+	echo "dosync: copy done, no errors"
+}
+
+case "$mode" in
+	check) check ;;
+	copy) copy ;;
+	verify) copy && check ;;
+esac
