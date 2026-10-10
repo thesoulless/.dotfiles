@@ -104,6 +104,7 @@ in
   # Library-only formulae (little-cms2, jpeg-xl, aom, harfbuzz, openjpeg, webp,
   # libheif) are gone: ffmpeg/imagemagick bring their own deps under Nix.
   home.packages = with pkgs; [
+    (callPackage ./pkgs/agentaps-bin.nix { })
     antidote
     ast-grep
     atuin
