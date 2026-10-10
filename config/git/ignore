@@ -1,0 +1,50 @@
+# Global git ignore (~/.config/git/ignore): machine/tool junk and personal
+# files only; project-specific patterns belong in each repo's .gitignore.
+
+# direnv / devenv
+.direnv
+.envrc.local
+.env
+.devenv/
+.devenv.flake.nix
+devenv.local.nix
+
+# nix build outputs
+result
+result-*
+
+# macOS
+.DS_Store
+._*
+Icon
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# IDEs / editors
+.idea/
+.vscode/
+.sublime-*/
+
+# language caches and debug artifacts
+node_modules/
+.venv/
+__debug_bin*
+.playwright-mcp/
+.watchman-cookie-*
+
+# personal, never-pushed tooling
+.pre-commit-config.yaml
+
+# AI assistants: instructions and state stay local
+CLAUDE.md
+AGENT.md
+AGENTS.md
+copilot-instructions.md
+Project_Requirement_Document.md
+.claude/
+.cursor/
+.codex/
+.mcp.json
+mcpservers.json

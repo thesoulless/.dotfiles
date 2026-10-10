@@ -15,6 +15,8 @@ in
     "atuin/config.toml".source = link "config/atuin/config.toml";
     "ghostty".source = link "config/ghostty";
     "direnv/direnv.toml".source = link "config/direnv/direnv.toml";
+    # git's default global-excludes path, so no core.excludesfile needed.
+    "git/ignore".source = link "config/git/ignore";
     # Personal commit-message lint; repos opt in via `commit-msg-lint --install`.
     "git/hooks/commit-msg-lint".source = link "bin/commit-msg-lint";
     "tmux/tmux.conf".source = link "tmux/tmux.conf";
@@ -34,8 +36,6 @@ in
 
   programs.git = {
     enable = true;
-    # Global ignore (~/.config/git/ignore).
-    ignores = [ ".DS_Store" ];
     # Identity by directory. Order matters: git takes the last matching value,
     # so the machine-wide default (untracked ~/.gitconfig.local, e.g. the work
     # identity on the work laptop) comes first and the personal directories
