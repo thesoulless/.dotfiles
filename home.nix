@@ -110,6 +110,8 @@ in
     atuin
     cachix
     carapace
+    claude-code          # CLI; `claude auth login` is what the ACP adapter authenticates with
+    claude-code-acp      # provides `claude-agent-acp`: Claude Code over ACP, for Agentaps
     coreutils-prefixed   # g-prefixed like Homebrew's, so BSD ls/date/sed stay the default
     daisydisk
     devenv
