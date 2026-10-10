@@ -14,6 +14,7 @@ in
     "nushell".source = link "config/nushell";
     "atuin/config.toml".source = link "config/atuin/config.toml";
     "ghostty".source = link "config/ghostty";
+    "direnv/direnv.toml".source = link "config/direnv/direnv.toml";
     # Personal commit-message lint; repos opt in via `commit-msg-lint --install`.
     "git/hooks/commit-msg-lint".source = link "bin/commit-msg-lint";
     "tmux/tmux.conf".source = link "tmux/tmux.conf";

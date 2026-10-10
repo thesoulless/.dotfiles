@@ -2,3 +2,7 @@
 # `nix flake update`; the in-app updater would fight that.
 auto-update = off
 font-family = JetBrains Mono
+font-size = 14
+macos-option-as-alt=true
+window-colorspace=display-p3
+keybind = shift+enter=text:\x1b\r
