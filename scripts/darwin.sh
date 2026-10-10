@@ -4,12 +4,19 @@
 # surface before any password prompt and the closure diff shows what the
 # switch will change. The first run bootstraps darwin-rebuild via `nix run`.
 #
+# Identity comes from ~/.config/dotfiles/local.nix (see install.sh), read with
+# --impure so neither the account name nor the machine appears in the repo.
 # Flakes only see git-tracked files: `git add` new files before running.
 set -eu
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FLAKE="$DOTFILES#$(scutil --get LocalHostName)"
+LOCAL="${DOTFILES_LOCAL:-$HOME/.config/dotfiles/local.nix}"
+[ -f "$LOCAL" ] || { echo "darwin.sh: $LOCAL missing; run ./install.sh once" >&2; exit 1; }
+role=$(sed -nE 's/.*role *= *"([^"]+)".*/\1/p' "$LOCAL" | head -1)
+[ -n "$role" ] || { echo "darwin.sh: no role = \"...\" in $LOCAL" >&2; exit 1; }
+FLAKE="$DOTFILES#$role"
 cd "$DOTFILES"
+export DOTFILES_LOCAL="$LOCAL"
 
 # The Determinate installer leaves a comment-only placeholder here; the
 # determinateNix module manages this file and nix-darwin refuses to overwrite
@@ -25,12 +32,13 @@ if ! command -v darwin-rebuild >/dev/null 2>&1; then
 	# Write flake.lock as the user first; otherwise the sudo run below creates
 	# it root-owned and every later `nix flake update` fails.
 	nix flake lock
-	# Branch must match nix-darwin.url in flake.nix.
-	exec sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake "$FLAKE"
+	# Branch must match nix-darwin.url in flake.nix. `env` carries the
+	# variable past sudo's environment reset.
+	exec sudo env DOTFILES_LOCAL="$LOCAL" nix run nix-darwin/master#darwin-rebuild -- switch --impure --flake "$FLAKE"
 fi
 
-darwin-rebuild build --flake "$FLAKE"
+darwin-rebuild build --impure --flake "$FLAKE"
 echo "--- changes vs the running system:"
 nix store diff-closures /run/current-system ./result || true
 rm -f ./result
-sudo darwin-rebuild switch --flake "$FLAKE"
+sudo env DOTFILES_LOCAL="$LOCAL" darwin-rebuild switch --impure --flake "$FLAKE"

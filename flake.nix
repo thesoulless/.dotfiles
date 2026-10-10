@@ -6,11 +6,12 @@
   #
   # Principles: everything that has a nixpkgs package comes from here; tools
   # are tried first with `, tool` (comma) and only then added to home.nix, or
-  # to hosts/<name>.nix when only one machine needs them; toolchains arrive
-  # per project via devenv; configs are linked into this checkout so edits are
-  # live without a rebuild; no Homebrew unless a cask is ever needed; the
-  # untracked ~/.gitconfig.local, ~/.zshrc.local and ~/.env.local.nu hold
-  # what must not be in a public repo.
+  # to hosts/<role>.nix when only machines of one role need them; toolchains
+  # arrive per project via devenv; configs are linked into this checkout so
+  # edits are live without a rebuild; no Homebrew unless a cask is ever needed;
+  # the untracked ~/.config/dotfiles/local.nix (account name, role),
+  # ~/.gitconfig.local, ~/.zshrc.local and ~/.env.local.nu hold what must not
+  # be in a public repo.
   #
   # Apply: ./scripts/darwin.sh   (build, show the closure diff, then switch)
   # Update inputs: nix flake update && ./scripts/darwin.sh
@@ -36,16 +37,22 @@
 
   outputs = inputs@{ self, nixpkgs, nix-darwin, home-manager, determinate, nix-index-database, ... }:
     let
-      # One entry per machine, keyed by `scutil --get LocalHostName` (what
-      # `darwin-rebuild --flake ~/.dotfiles` looks up).
-      hosts = {
-        "WORK-MAC" = {
-          user = "me";
-          modules = [ ./hosts/work.nix ];
-        };
+      # Who and where stay out of the repo: ~/.config/dotfiles/local.nix holds
+      # `{ user = "<account name>"; role = "work"; }` and scripts/darwin.sh
+      # passes its path in DOTFILES_LOCAL with --impure. Without it (CI) every
+      # role still evaluates, for a placeholder user.
+      local =
+        let p = builtins.getEnv "DOTFILES_LOCAL";
+        in if p == "" then { user = "nobody"; } else import p;
+      user = local.user;
+
+      # Configurations are keyed by role, not hostname; a machine picks its
+      # role in local.nix, so a second machine of the same role needs no change.
+      roles = {
+        work = [ ./hosts/work.nix ];
       };
 
-      mkHost = host: { user, modules }:
+      mkRole = role: modules:
         nix-darwin.lib.darwinSystem {
           specialArgs = { inherit inputs user; };
           modules = [
@@ -68,6 +75,6 @@
         };
     in
     {
-      darwinConfigurations = builtins.mapAttrs mkHost hosts;
+      darwinConfigurations = builtins.mapAttrs mkRole roles;
     };
 }

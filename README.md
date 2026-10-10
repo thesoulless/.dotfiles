@@ -10,10 +10,12 @@ The migration history and remaining ideas are in the header of `flake.nix`.
 ```sh
 git clone https://github.com/thesoulless/.dotfiles ~/.dotfiles
 cd ~/.dotfiles
-# add the machine to the `hosts` table in flake.nix (key: `scutil --get LocalHostName`)
-# and create hosts/<name>.nix, then:
-./install.sh
+./install.sh   # asks for the machine's role (work/personal) once
 ```
+
+The account name and role are written to `~/.config/dotfiles/local.nix`, never
+to the repo; the flake reads that file with `--impure`. A role maps to
+`hosts/<role>.nix`, so a new laptop of an existing role needs no repo change.
 
 `install.sh` installs Nix and runs `scripts/darwin.sh`, which builds the system
 (no sudo), prints what changes, then `sudo darwin-rebuild switch`. Everything
@@ -58,7 +60,7 @@ is live without a rebuild. Nix changes need a switch; new files must be
 | `flake.nix` | inputs, the `hosts` table, wiring |
 | `darwin.nix` | system: Nix daemon settings, fonts, Touch ID, nix-index |
 | `home.nix` | user: packages, git identity, dotfile links, generated snippets |
-| `hosts/<name>.nix` | what only that machine gets (e.g. work tooling) |
+| `hosts/<role>.nix` | what only machines of that role get (e.g. work tooling) |
 | `config/<app>/` | `~/.config/<app>` (nvim, nushell, atuin) |
 | `tmux/` | `~/.config/tmux` (plugins come from nixpkgs) |
 | `zsh/` | `~/.zshrc`, `~/.zsh_profile`, `~/.zsh_plugins.txt` (antidote) |
