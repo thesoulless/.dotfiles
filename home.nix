@@ -99,52 +99,42 @@ in
     '';
   };
 
-  # CLI tools wanted on every machine (work-only ones: hosts/work.nix). All
-  # verified available for aarch64-darwin in nixpkgs-unstable (2026-10).
-  # Library-only formulae (little-cms2, jpeg-xl, aom, harfbuzz, openjpeg, webp,
-  # libheif) are gone: ffmpeg/imagemagick bring their own deps under Nix.
+  # CLI tools wanted on every machine (work-only ones: hosts/work.nix).
+  # Occasional tools are not listed: `, tool` (comma) runs them from nixpkgs
+  # on demand; per-project ones (formatters, mkcert, toolchains) come from
+  # each project's devenv.
   home.packages = with pkgs; [
     (callPackage ./pkgs/agentaps-bin.nix { })
     antidote
-    ast-grep
     atuin
-    cachix
     carapace
     claude-code          # CLI; `claude auth login` is what the ACP adapter authenticates with
     claude-code-acp      # provides `claude-agent-acp`: Claude Code over ACP, for Agentaps
-    coreutils-prefixed   # g-prefixed like Homebrew's, so BSD ls/date/sed stay the default
     daisydisk
     devenv
     direnv
-    dprint
     fd
     ffmpeg
     fzf
-    ghostscript
     ghostty-bin          # vendor-signed Ghostty.app, lands in ~/Applications/Home Manager Apps
     glow
-    graphviz
     htop
     iina
     imagemagick
     jq
     lazygit
     lua-language-server  # lua_ls for nvim (was mason-installed)
-    mkcert
     neovim
     nixd                 # Nix LSP; nvim enables it when on PATH
     nixfmt
     nodejs               # LTS; bundles corepack. Per-project versions come from devenv.
     nushell
-    p7zip
     pass
     pspg
     ripgrep
     rsync                # macOS ships openrsync (rsync 2.6.9 compatible): no --info=progress2
     stylua               # Lua formatter conform expects
-    tlrc
     tmux
-    tokei
     tree-sitter          # was: tree-sitter-cli
     usql                 # was: xo/xo/usql (tap no longer needed)
     yt-dlp
