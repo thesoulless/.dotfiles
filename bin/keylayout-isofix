@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""Make an ISO-aware variant of an exported .keylayout: on ISO keyboard types the
+§± key (code 10, top left) and the `~ key (code 50, next to left shift) swap
+outputs; ANSI keyboards are untouched. Text-level edits, so the file keeps
+its XML 1.1 entities exactly. Usage:
+  keylayout-isofix ABC.keylayout ABCISO "ABC ISO" out-dir [type,...]   -> out-dir/ABCISO.bundle
+The internal name must have no spaces: macOS derives the input-source ID from
+it; the display title goes to InfoPlist.strings. The optional list adds
+keyboard types to Apple's ISO ranges. Before the range lookup, macOS maps the
+physical keyboard type to a class code (macOS 26: 204 ANSI, 205 ISO), so the
+default adds 205 rather than the number the keyboard itself reports.
+"""
+import os, re, sys, plistlib, zlib
+
+src, name, title, outdir = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+extra_types = [int(t) for t in sys.argv[5].split(',')] if len(sys.argv) > 5 else [205]
+s = open(src, encoding='utf-8').read()
+
+# <keyboard ... name="..." id="...">
+s = re.sub(r'(<keyboard\b[^>]*\bname=")[^"]*(")', lambda m: m.group(1) + name + m.group(2), s, count=1)
+s = re.sub(r'(<keyboard\b[^>]*\bid=")[^"]*(")', lambda m: m.group(1) + str(-(zlib.crc32(name.encode()) % 30000 + 2000)) + m.group(2), s, count=1)
+
+layouts_m = re.search(r'<layouts>(.*?)</layouts>', s, re.S)
+entries = re.findall(r'<layout\b[^>]*/>', layouts_m.group(1))
+first = entries[0]
+ansi_id = re.search(r'mapSet="([^"]+)"', first).group(1)
+modifiers = re.search(r'modifiers="([^"]+)"', first).group(1)
+iso_id = ansi_id + '_iso'
+
+set_m = re.search(r'(\s*)<keyMapSet id="%s">.*?</keyMapSet>' % re.escape(ansi_id), s, re.S)
+ansi_block = set_m.group(0)
+iso_block = ansi_block.replace('<keyMapSet id="%s">' % ansi_id, '<keyMapSet id="%s">' % iso_id, 1)
+iso_block = iso_block.replace('baseMapSet="%s"' % ansi_id, 'baseMapSet="%s"' % iso_id)
+iso_block = (iso_block.replace('code="10"', 'code="\x00"')
+                      .replace('code="50"', 'code="10"')
+                      .replace('code="\x00"', 'code="50"'))
+s = s.replace(ansi_block, ansi_block + iso_block, 1)
+
+iso_ranges = [(21, 23), (30, 30), (194, 194), (197, 197), (200, 201), (206, 207)] + [(t, t) for t in extra_types]
+new_entries = []
+for e in entries:
+    lo, hi = int(re.search(r'first="(\d+)"', e).group(1)), int(re.search(r'last="(\d+)"', e).group(1))
+    if (lo, hi) in iso_ranges:
+        e = re.sub(r'mapSet="[^"]+"', 'mapSet="%s"' % iso_id, e); iso_ranges.remove((lo, hi))
+    new_entries.append(e)
+for lo, hi in iso_ranges:
+    new_entries.append('<layout first="%d" last="%d" mapSet="%s" modifiers="%s"/>' % (lo, hi, iso_id, modifiers))
+new_entries.sort(key=lambda e: int(re.search(r'first="(\d+)"', e).group(1)))  # out-of-order ranges are ignored
+indent = re.search(r'\n(\s*)<layout\b', layouts_m.group(0)).group(1)
+s = s.replace(layouts_m.group(0), '<layouts>\n' + ''.join(indent + e + '\n' for e in new_entries) + indent[:-4] + '</layouts>', 1)
+
+bundle = os.path.join(outdir, f'{name}.bundle'); res = os.path.join(bundle, 'Contents', 'Resources')
+os.makedirs(res, exist_ok=True)
+open(os.path.join(res, f'{name}.keylayout'), 'w', encoding='utf-8').write(s)
+ident = 'org.dotfiles.keyboardlayout.' + name.lower()  # macOS ignores the bundle unless the id contains "keyboardlayout"
+plistlib.dump({'CFBundleIdentifier': ident, 'CFBundleName': name,
+               'CFBundleVersion': '1.0', 'CFBundleShortVersionString': '1.0',
+               'KLInfo_' + name: {'TISInputSourceID': ident + '.keylayout.' + name,
+                                  'TISIntendedLanguage': 'en', 'TISIconIsTemplate': False,
+                                  'TICapsLockLanguageSwitchCapable': False}},
+              open(os.path.join(bundle, 'Contents', 'Info.plist'), 'wb'))
+lproj = os.path.join(res, 'en.lproj'); os.makedirs(lproj, exist_ok=True)
+open(os.path.join(lproj, 'InfoPlist.strings'), 'w', encoding='utf-8').write('"%s" = "%s";\n' % (name, title))
+print(f'wrote {bundle}: ANSI set "{ansi_id}" unchanged, ISO set "{iso_id}" with codes 10/50 swapped, '
+      f'{len(new_entries)} keyboard-type ranges')

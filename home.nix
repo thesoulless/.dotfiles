@@ -1,5 +1,5 @@
 # home-manager configuration for the primary user (shared by every host; see README.md).
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   # Dotfiles are linked straight into this checkout rather than copied into
@@ -27,6 +27,25 @@ in
       run-shell ${pkgs.tmuxPlugins.continuum.rtp}
     '';
   };
+  # Keyboard layout: Apple's ABC with the ISO quirk fixed. On the built-in
+  # keyboard the key under Esc gives `/~ and the key next to left shift
+  # gives §/±; other keyboards are unchanged. Generated from a Ukelele export
+  # of ABC with
+  #   keylayout-isofix "ABC copy.keylayout" ABCISO "ABC ISO" config/keyboard-layouts
+  # Add "ABC ISO" under System Settings > Keyboard > Input Sources after a
+  # logout. (hidutil cannot remap these two keys on the built-in keyboard;
+  # modifiers like caps lock it can.)
+  # Copied, not linked: macOS ignores symlinked bundles in Keyboard Layouts.
+  home.activation.keyboardLayouts = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    dest="$HOME/Library/Keyboard Layouts/ABCISO.bundle"
+    src=${./config/keyboard-layouts/ABCISO.bundle}
+    if ! diff -rq "$src" "$dest" >/dev/null 2>&1; then
+      run rm -rf "$dest"
+      run cp -R "$src" "$dest"
+      run chmod -R u+w "$dest"
+    fi
+  '';
+
   home.file = {
     ".zshrc".source = link "zsh/zshrc";
     ".zsh_profile".source = link "zsh/zsh_profile";

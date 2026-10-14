@@ -20,24 +20,18 @@
     '';
   };
 
-  # Key remapping with hidutil (nix-darwin's Karabiner module has been broken
-  # since Karabiner 15, nix-darwin#1041). A login agent, because
+  # Caps lock -> escape on every keyboard, via a login agent (nix-darwin's
   # system.keyboard.* only runs hidutil during activation, which a reboot
-  # loses. Two steps: caps lock -> escape on every keyboard present at login,
-  # then the built-in ISO keyboard additionally gets the §/± key (HID 0x64,
-  # top left) swapped with `/~ (HID 0x35, next to left shift). A matched
-  # --set replaces the whole mapping for that device, so it repeats caps lock.
-  # Keyboards that connect later miss the first step; for those, System
-  # Settings > Keyboard > Keyboard Shortcuts > Modifier Keys is the robust
-  # per-keyboard fallback.
+  # loses; its Karabiner module is broken since Karabiner 15, nix-darwin#1041).
+  # The ISO §/` swap is NOT done here: the built-in keyboard ignores hidutil
+  # for those keys, so it lives in the keyboard layout instead (see
+  # keylayout-isofix). A keyboard connected after login misses this mapping
+  # until the next login.
   launchd.user.agents.keyboard-remap = {
     serviceConfig = {
       ProgramArguments = [
-        "/bin/sh" "-c"
-        ''
-          /usr/bin/hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}' &&
-          /usr/bin/hidutil property --matching '{"Product":"Apple Internal Keyboard / Trackpad"}' --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029},{"HIDKeyboardModifierMappingSrc":0x700000064,"HIDKeyboardModifierMappingDst":0x700000035},{"HIDKeyboardModifierMappingSrc":0x700000035,"HIDKeyboardModifierMappingDst":0x700000064}]}'
-        ''
+        "/usr/bin/hidutil" "property" "--set"
+        ''{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}''
       ];
       RunAtLoad = true;
     };
