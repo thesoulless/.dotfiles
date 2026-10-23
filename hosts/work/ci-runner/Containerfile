@@ -1,0 +1,19 @@
+# GitHub Actions runner for the work org, run as one long-lived apple/container
+# VM on this laptop (hosts/work.nix boots it at login, create.sh builds and
+# registers it). The upstream image ships the runner and the static Docker
+# engine but starts neither; entrypoint.sh starts dockerd for `services:` and
+# image builds, then the runner. iptables is what dockerd needs and the static
+# bundle lacks; the rest is what jobs written for GitHub's Ubuntu image assume
+# to be there: a C toolchain, pkg-config and cmake for Rust build scripts,
+# python3, zstd for actions/cache, and the libraries and tools the test suites
+# shell out to. Jobs install anything else with sudo apt-get.
+FROM ghcr.io/actions/actions-runner:2.338.0
+
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        iptables build-essential pkg-config libssl-dev cmake python3 zstd unzip \
+        file ffmpeg sqlite3 ripgrep libicu74 \
+    && rm -rf /var/lib/apt/lists/*
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
