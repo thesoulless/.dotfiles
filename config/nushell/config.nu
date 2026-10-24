@@ -107,3 +107,17 @@ $env.config.keybindings ++= [
     #     event: { send: executehostcommand cmd: (_atuin_search_cmd) }
     # }
 ]
+
+def rgf [pattern: string, path?: path] {
+  let dir = ($path | default $env.HOME)
+  let sel = (try {
+    rg --hidden --no-ignore --line-number --no-heading --no-messages $pattern $dir
+    | fzf --delimiter : --preview 'bat --color=always --highlight-line {2} {1}'
+    | str trim
+  } catch { "" })
+
+  if ($sel | is-not-empty) {
+    let parts = ($sel | split row ":")
+    ^nvim $"+($parts.1)" $parts.0
+  }
+}
