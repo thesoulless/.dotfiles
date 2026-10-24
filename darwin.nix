@@ -97,6 +97,23 @@
     dock.show-recents = false;
   };
 
+  # Caps lock -> escape on every keyboard, via a login agent (nix-darwin's
+  # system.keyboard.* only runs hidutil during activation, which a reboot
+  # loses; its Karabiner module is broken since Karabiner 15, nix-darwin#1041).
+  # The ISO §/` swap is NOT done here: the built-in keyboard ignores hidutil
+  # for those keys, so it lives in the keyboard layout instead (see
+  # keylayout-isofix). Keyboards connected later, like a Bluetooth one
+  # reconnecting, inherit the mapping.
+  launchd.user.agents.keyboard-remap = {
+    serviceConfig = {
+      ProgramArguments = [
+        "/usr/bin/hidutil" "property" "--set"
+        ''{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}''
+      ];
+      RunAtLoad = true;
+    };
+  };
+
   # Shown by `darwin-rebuild --list-generations`.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
 

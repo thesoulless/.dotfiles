@@ -50,6 +50,7 @@
       # role in local.nix, so a second machine of the same role needs no change.
       roles = {
         work = [ ./hosts/work.nix ];
+        personal = [ ];
       };
 
       mkRole = role: modules:

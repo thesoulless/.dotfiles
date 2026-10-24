@@ -51,6 +51,11 @@ in
     ".zsh_profile".source = link "zsh/zsh_profile";
     ".zsh_plugins.txt".source = link "zsh/zsh_plugins.txt";
     ".local/scripts".source = link "bin";
+    ".gnupg/gpg-agent.conf".text = ''
+      pinentry-program ${pkgs.pinentry_mac}/bin/pinentry-mac
+      default-cache-ttl 600
+      max-cache-ttl 7200
+    '';
   };
 
   programs.git = {
@@ -96,7 +101,10 @@ in
   };
 
   # GitHub CLI; its credential helper lets git push over https after `gh auth login`.
-  programs.gh.enable = true;
+  programs.gh = {
+    enable = true;
+    settings.aliases.co = "pr checkout";
+  };
 
   # Shell init snippets generated at build time from the exact atuin/zoxide in
   # this closure, so they can never go stale on upgrade (replaces
@@ -126,9 +134,10 @@ in
     (callPackage ./pkgs/agentaps-bin.nix { })
     antidote
     atuin
+    bat
     carapace
     claude-code          # CLI; `claude auth login` is what the ACP adapter authenticates with
-    claude-code-acp      # provides `claude-agent-acp`: Claude Code over ACP, for Agentaps
+    claude-agent-acp     # provides `claude-agent-acp`: Claude Code over ACP, for Agentaps
     daisydisk
     devenv
     direnv
@@ -137,6 +146,7 @@ in
     fzf
     ghostty-bin          # vendor-signed Ghostty.app, lands in ~/Applications/Home Manager Apps
     glow
+    gnupg
     htop
     iina
     imagemagick
@@ -149,6 +159,7 @@ in
     nodejs               # LTS; bundles corepack. Per-project versions come from devenv.
     nushell
     pass
+    pinentry_mac         # gpg passphrase prompts via a native dialog
     pspg
     ripgrep
     rsync                # macOS ships openrsync (rsync 2.6.9 compatible): no --info=progress2
