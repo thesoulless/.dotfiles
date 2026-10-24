@@ -11,6 +11,20 @@ if [[ -z $selected ]]; then
 fi
 
 selected_name=$(basename "$selected" | tr . _)
+
+if [[ -n $REX_SESSION ]]; then
+    rex="$REX_BIN_DIR/rex"
+    session_id=$("$rex" ls --json | jq -r --arg n "$selected_name" 'first(.sessions[] | select(.label == $n) | .session_id) // empty')
+    if [[ -z $session_id ]]; then
+        session_id=$("$rex" new "$selected_name" -c "$selected" --json -- nu | jq -r .session_id)
+    fi
+    # The app on this Mac showing the current session; a remote app attached
+    # to it (over Tailscale) would otherwise be switched instead.
+    client_id=$("$rex" client ls -s "$REX_SESSION" --json | jq -r 'first(.clients[] | select(.principal.kind == "peer") | .client_id) // empty')
+    "$rex" ${client_id:+-C "$client_id"} do session.select session_id="$session_id"
+    exit 0
+fi
+
 tmux_running=$(pgrep tmux)
 
 if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
