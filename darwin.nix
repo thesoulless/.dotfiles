@@ -51,6 +51,12 @@
   # zsh/zshrc runs compinit itself (once, with a cached dump); a second run
   # here would rebuild the completion dump on every shell start.
   programs.zsh.enableCompletion = false;
+  # /etc/zshenv resets PATH, dropping the `rex` that Rex puts first.
+  environment.interactiveShellInit = ''
+    if [ -n "$REX_BIN_DIR" ]; then
+      export PATH="$REX_BIN_DIR:$PATH"
+    fi
+  '';
 
   # Apple's Command Line Tools 26.6 bundle a macOS 27 beta SDK next to the real
   # 26.x one, and xcrun picks the newest. Its .tbd stubs declare an arm64e.x1

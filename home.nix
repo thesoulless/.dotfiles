@@ -51,6 +51,9 @@ in
     ".zsh_profile".source = link "zsh/zsh_profile";
     ".zsh_plugins.txt".source = link "zsh/zsh_plugins.txt";
     ".local/scripts".source = link "bin";
+    # nushell's config dir on macOS when XDG_CONFIG_HOME isn't set yet, as
+    # for a nu that Rex starts directly with launchd's environment.
+    "Library/Application Support/nushell".source = link "config/nushell";
     ".gnupg/gpg-agent.conf".text = ''
       pinentry-program ${pkgs.pinentry_mac}/bin/pinentry-mac
       default-cache-ttl 600

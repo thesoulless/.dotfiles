@@ -56,6 +56,9 @@ path add ...$priority_paths
 # Last resort for hand-installed binaries that have no nixpkgs package;
 # machine-specific packaged tools belong in hosts/<name>.nix instead.
 $env.PATH = ($env.PATH | append ($env.HOME | path join ".local/bin"))
+# Rex terminals get REX_BIN_DIR but not always on PATH; its `rex` must come
+# first so it matches the running server.
+if ($env.REX_BIN_DIR? | is-not-empty) { path add $env.REX_BIN_DIR }
 
 #########################################################################
 # Env vars
