@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Claude Code hook: reports Claude's state to Rex with the program status
+# escape (OSC 7501), so tabs and the session picker show it.
+[[ -n $REX_SESSION ]] || exit 0
+
+input=$(cat)
+field() { jq -r "$1 // empty" <<<"$input"; }
+
+# Hooks have no controlling terminal; write to the one Claude runs in.
+pid=$PPID tty=
+while [[ $pid -gt 1 ]]; do
+    read -r tty ppid < <(ps -o tty=,ppid= -p "$pid")
+    [[ -n $tty && $tty != "??" ]] && break
+    tty= pid=$ppid
+done
+[[ -n $tty ]] || exit 0
+
+prompt_file="${TMPDIR:-/tmp}/claude-rex-status-$(field .session_id)"
+oneline() { tr -s '[:space:][:cntrl:]' ' ' | sed 's/^ //; s/ $//' | cut -c1-120; }
+
+kind=
+case $(field .hook_event_name) in
+UserPromptSubmit)
+    field .prompt | oneline >"$prompt_file"
+    state=working msg=$(<"$prompt_file") ;;
+PostToolUse) state=working msg=$(cat "$prompt_file" 2>/dev/null) ;;
+PreToolUse) state=blocked kind=question msg=$(field '.tool_input.questions[0].question' | oneline) ;;
+Notification)
+    case $(field .notification_type) in
+    permission_prompt) kind=permission ;;
+    elicitation_dialog) kind=question ;;
+    *) exit 0 ;;
+    esac
+    state=blocked msg=$(field .message | oneline) ;;
+Stop) state=done msg=$(cat "$prompt_file" 2>/dev/null) ;;
+SessionEnd) rm -f "$prompt_file"; state=clear msg= ;;
+*) exit 0 ;;
+esac
+
+report="state=$state:app=claude-code${kind:+:kind=$kind}"
+[[ -n $msg ]] && report+=":msg=$(printf '%s' "$msg" | base64 | tr -d '\n')"
+printf '\e]7501;%s\e\\' "$report" >"/dev/$tty" 2>/dev/null
+exit 0
