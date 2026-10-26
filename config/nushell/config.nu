@@ -109,7 +109,7 @@ $env.config.keybindings ++= [
 ]
 
 def rgf [pattern: string, path?: path] {
-  let dir = ($path | default $env.HOME)
+  let dir = ($path | default $env.PWD)
   let sel = (try {
     rg --hidden --no-ignore --line-number --no-heading --no-messages $pattern $dir
     | fzf --delimiter : --preview 'bat --color=always --highlight-line {2} {1}'
