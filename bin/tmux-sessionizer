@@ -3,7 +3,14 @@
 if [[ $# -eq 1 ]]; then
     selected=$1
 else
-    selected=$(find ~/dev/swift/ ~/zig/ ~/go/src/github.com/news-media ~/go/src/github.com/thesoulless ~/go/src/github.com/hamednz ~/unity -mindepth 1 -maxdepth 1 -type d | fzf)
+    fzf_opts=()
+    if [[ -n $REX_SESSION ]]; then
+        # Rex shows the picker in a frameless floating pane: draw a dialog.
+        fzf_opts=(--layout=reverse --border=rounded --border-label=' Projects '
+            --padding=0,1 --info=inline-right --prompt='› '
+            --delimiter=/ --with-nth=-2..)
+    fi
+    selected=$(find ~/dev/swift ~/zig ~/go/src/github.com/news-media ~/go/src/github.com/thesoulless ~/go/src/github.com/hamednz ~/unity -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf "${fzf_opts[@]}")
 fi
 
 if [[ -z $selected ]]; then
@@ -18,9 +25,12 @@ if [[ -n $REX_SESSION ]]; then
     if [[ -z $session_id ]]; then
         session_id=$("$rex" new "$selected_name" -c "$selected" --json -- nu | jq -r .session_id)
     fi
-    # The app on this Mac showing the current session; a remote app attached
-    # to it (over Tailscale) would otherwise be switched instead.
-    client_id=$("$rex" client ls -s "$REX_SESSION" --json | jq -r 'first(.clients[] | select(.principal.kind == "peer") | .client_id) // empty')
+    # rex itself honours REX_CLIENT (set by the sessionizer action in Rex's
+    # init.lua). Otherwise: the app on this Mac showing the current session;
+    # a remote app attached to it (over Tailscale) would be switched instead.
+    if [[ -z $REX_CLIENT ]]; then
+        client_id=$("$rex" client ls -s "$REX_SESSION" --json | jq -r 'first(.clients[] | select(.principal.kind == "peer") | .client_id) // empty')
+    fi
     "$rex" ${client_id:+-C "$client_id"} do session.select session_id="$session_id"
     exit 0
 fi

@@ -14,6 +14,7 @@ in
     "nushell".source = link "config/nushell";
     "atuin/config.toml".source = link "config/atuin/config.toml";
     "ghostty".source = link "config/ghostty";
+    "rex".source = link "config/rex";
     "direnv/direnv.toml".source = link "config/direnv/direnv.toml";
     # git's default global-excludes path, so no core.excludesfile needed.
     "git/ignore".source = link "config/git/ignore";
