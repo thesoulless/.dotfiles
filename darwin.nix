@@ -73,6 +73,48 @@
     reattach = true;
   };
 
+  # `sudo` shim, ahead of /usr/bin on PATH: Touch ID only when this Mac's
+  # keyboard or trackpad was used in the last 30 s, otherwise the password in
+  # the terminal (e.g. typed from another machine through Rex). Force the
+  # password with `sudo --pw ...` or SUDO_PW=1. pam_tid declines in askpass
+  # mode (`sudo -A`), which hands the prompt to the helper below.
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "sudo" ''
+      askpass=${pkgs.writeShellScript "sudo-askpass" ''
+        read -rsp "$1" pw </dev/tty 2>/dev/tty
+        echo >/dev/tty
+        printf '%s\n' "$pw"
+      ''}
+
+      pw=0
+      [ "''${SUDO_PW:-}" = 1 ] && pw=1
+      if [ "''${1:-}" = --pw ]; then pw=1; shift; fi
+
+      # sudo refuses -A together with -S (password on stdin).
+      skip=0
+      for a in "$@"; do
+        if [ "$skip" = 1 ]; then skip=0; continue; fi
+        case $a in
+          --stdin | -[!-]*S*) exec /usr/bin/sudo "$@" ;;
+          -[CDghpRTUu]) skip=1 ;;
+          --) break ;;
+          -*) ;;
+          *) break ;;
+        esac
+      done
+
+      if [ "$pw" = 0 ] && { : </dev/tty; } 2>/dev/null; then
+        idle=$(/usr/sbin/ioreg -c IOHIDSystem -d 4 | /usr/bin/awk '/HIDIdleTime/ { print int($NF / 1e9); exit }')
+        [ "''${idle:-0}" -lt 30 ] || pw=1
+      fi
+
+      if [ "$pw" = 1 ]; then
+        SUDO_ASKPASS=''${SUDO_ASKPASS:-$askpass} exec /usr/bin/sudo -A "$@"
+      fi
+      exec /usr/bin/sudo "$@"
+    '')
+  ];
+
   # "command not found" names the nixpkgs package, `nix-locate` searches the
   # prebuilt index, and `, tool args` runs a binary from nixpkgs without
   # installing it. This is how tools get tried before they earn a place in
