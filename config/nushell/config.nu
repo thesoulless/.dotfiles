@@ -56,9 +56,10 @@ $env.config.cursor_shape.vi_insert = "inherit"
 # env_change.PWD is owned by zoxide (sourced above); the devenv autoload hook
 # (autoload/devenv-hook.nu) appends to pre_prompt. Never reassign either with
 # `= [...]` — that wipes those; always `| append`. So nothing extra is wired here.
-# Nix paths and env (NIX_SSL_CERT_FILE etc.) need no setup here: nushell runs
-# inside tmux under zsh, which gets them from nix-darwin's /etc/zshenv, and
-# env.nu puts the Nix profile dirs first on PATH anyway.
+# Nix env (NIX_SSL_CERT_FILE etc.) is not set up here: under tmux it comes from
+# zsh (nix-darwin's /etc/zshenv), but a nu that Rex starts with launchd's
+# environment has none of it. env.nu covers PATH; a tool that needs the rest
+# there must default it in its own wrapper.
 
 ####################################################
 # Key Bindings
