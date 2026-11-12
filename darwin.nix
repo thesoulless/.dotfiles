@@ -5,6 +5,19 @@
   nixpkgs.hostPlatform = "aarch64-darwin";
   nixpkgs.config.allowUnfree = true;
 
+  # claude trusts only $NIX_SSL_CERT_FILE on darwin, which a launchd
+  # environment (Rex's nu, GUI apps running claude-agent-acp) doesn't have.
+  nixpkgs.overlays = [
+    (final: prev: {
+      claude-code = prev.claude-code.overrideAttrs (old: {
+        postFixup = (old.postFixup or "") + ''
+          wrapProgram $out/bin/claude \
+            --set-default NIX_SSL_CERT_FILE /etc/ssl/certs/ca-certificates.crt
+        '';
+      });
+    })
+  ];
+
   # The account that runs `darwin-rebuild`; user-scoped options such as
   # system.defaults apply to it.
   system.primaryUser = user;
