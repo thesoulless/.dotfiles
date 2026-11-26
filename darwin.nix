@@ -175,6 +175,27 @@
     };
   };
 
+  # Cloudflare Tunnel for Lidless Eye (lidlesseye.nakedinmirror.com, behind
+  # Access). Config and credentials stay out of the repo, in
+  # ~/.cloudflared/lidlesseye.yml; a machine without that file exits cleanly
+  # and launchd leaves it be.
+  launchd.user.agents.lidlesseye-tunnel = {
+    serviceConfig = {
+      ProgramArguments = [
+        "${pkgs.writeShellScript "lidlesseye-tunnel" ''
+          conf="$HOME/.cloudflared/lidlesseye.yml"
+          [ -f "$conf" ] || exit 0
+          exec ${pkgs.cloudflared}/bin/cloudflared tunnel --config "$conf" run
+        ''}"
+      ];
+      RunAtLoad = true;
+      KeepAlive = { SuccessfulExit = false; };
+      ThrottleInterval = 30;
+      StandardOutPath = "/Users/${user}/Library/Logs/lidlesseye-tunnel.log";
+      StandardErrorPath = "/Users/${user}/Library/Logs/lidlesseye-tunnel.log";
+    };
+  };
+
   # Shown by `darwin-rebuild --list-generations`.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
 

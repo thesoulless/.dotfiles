@@ -142,6 +142,7 @@ in
     carapace
     claude-code          # CLI; `claude auth login` is what the ACP adapter authenticates with
     claude-agent-acp     # provides `claude-agent-acp`: Claude Code over ACP, for Agentaps
+    cloudflared          # CLI for the tunnels; the Lidless Eye one runs as a launchd agent (darwin.nix)
     daisydisk
     devenv
     direnv
